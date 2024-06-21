@@ -54,4 +54,13 @@ body {
 
   scrollbar-width: thin;
   scrollbar-color: rgb(var(--shade-5)) transparent;
+
+  &:focus-visible {
+    @apply outline-none;
+
+    &:not([tabindex^='-']) {
+      @apply ring-2;
+      @apply ring-brand-3;
+    }
+  }
 }
