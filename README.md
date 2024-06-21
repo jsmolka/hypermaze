@@ -1,0 +1,2 @@
+# hypermaze
+Multidimensional mazes!
