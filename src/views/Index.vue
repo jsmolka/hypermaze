@@ -3,25 +3,33 @@
 </template>
 
 <script setup>
+import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
 import { palette } from '@/graphic/palette';
-import * as THREE from '@/graphic/three';
 import { useResizeObserver } from '@vueuse/core';
+import {
+  BoxGeometry,
+  EdgesGeometry,
+  LineBasicMaterial,
+  LineSegments,
+  Mesh,
+  MeshBasicMaterial,
+} from 'three';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const container = ref();
 
 class MazeGraphic extends Graphic {
   paint() {
-    THREE.dispose(this.scene);
+    dispose(this.scene);
 
-    const cube = new THREE.Mesh(
-      new THREE.BoxGeometry(100, 100, 100),
-      new THREE.MeshBasicMaterial({ color: palette.brand3 }),
+    const cube = new Mesh(
+      new BoxGeometry(100, 100, 100),
+      new MeshBasicMaterial({ color: palette.brand3 }),
     );
-    const edge = new THREE.LineSegments(
-      new THREE.EdgesGeometry(cube.geometry),
-      new THREE.LineBasicMaterial({ color: palette.shade8 }),
+    const edge = new LineSegments(
+      new EdgesGeometry(cube.geometry),
+      new LineBasicMaterial({ color: palette.shade8 }),
     );
     this.scene.add(cube);
     this.scene.add(edge);

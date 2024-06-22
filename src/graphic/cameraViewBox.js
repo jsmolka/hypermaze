@@ -1,6 +1,6 @@
 // https://github.com/moroine/three.js/blob/CameraViewBox/examples/js/math/CameraViewBox.js
 
-import * as THREE from '@/graphic/three';
+import * as THREE from 'three';
 
 export class CameraViewBox {
   constructor() {

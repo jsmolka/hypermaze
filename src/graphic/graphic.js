@@ -1,7 +1,10 @@
+import { CameraControls } from '@/graphic/cameraControls';
+import { CameraViewBox } from '@/graphic/cameraViewBox';
+import { dispose } from '@/graphic/dispose';
 import { Renderer } from '@/graphic/renderer.js';
-import * as THREE from '@/graphic/three';
-import { vec3 } from '@/graphic/three';
 import _ from 'lodash';
+import { Clock, PerspectiveCamera, Scene, Vector3 } from 'three';
+import { Interaction } from 'three.interaction/src/index';
 
 export class Graphic {
   constructor(container, options = {}) {
@@ -19,8 +22,8 @@ export class Graphic {
     this.initRenderer(container);
     this.initScene();
     this.initCamera();
+    this.initCameraControls();
     this.initInteraction();
-    this.initControls();
   }
 
   get cameraFrustum() {
@@ -28,7 +31,7 @@ export class Graphic {
       fov: 45,
       aspect: this.renderer.width / this.renderer.height,
       near: 1,
-      far: 20_000,
+      far: 20000,
     };
   }
 
@@ -37,36 +40,26 @@ export class Graphic {
   }
 
   initScene() {
-    this.scene = new THREE.Scene();
+    this.scene = new Scene();
   }
 
   initCamera() {
-    this.camera = new THREE.PerspectiveCamera(
-      this.cameraFrustum.fov,
-      this.cameraFrustum.aspect,
-      this.cameraFrustum.near,
-      this.cameraFrustum.far,
-    );
+    this.camera = new PerspectiveCamera();
+    Object.assign(this.camera, this.cameraFrustum);
     this.resetCamera();
   }
 
-  initInteraction() {
-    this.interaction = new THREE.Interaction(this.renderer, this.scene, this.camera, {
-      autoPreventDefault: true,
-    });
-  }
-
-  initControls() {
-    this.controls = new THREE.CameraControls(this.camera, this.renderer.domElement);
+  initCameraControls() {
+    this.controls = new CameraControls(this.camera, this.renderer.domElement);
     this.controls.smoothTime = 0;
     this.controls.draggingSmoothTime = 0;
     this.controls.minPolarAngle = 0;
     this.controls.maxPolarAngle = Math.PI;
-    this.controls.mouseButtons.left = THREE.CameraControls.ACTION.OFFSET;
-    this.controls.mouseButtons.middle = THREE.CameraControls.ACTION.DOLLY;
-    this.controls.mouseButtons.right = THREE.CameraControls.ACTION.ROTATE;
+    this.controls.mouseButtons.left = CameraControls.ACTION.OFFSET;
+    this.controls.mouseButtons.middle = CameraControls.ACTION.DOLLY;
+    this.controls.mouseButtons.right = CameraControls.ACTION.ROTATE;
 
-    const clock = new THREE.Clock();
+    const clock = new Clock();
     const update = () => {
       const updated = this.controls.update(clock.getDelta());
       if (updated) {
@@ -78,14 +71,20 @@ export class Graphic {
     update();
   }
 
+  initInteraction() {
+    this.interaction = new Interaction(this.renderer, this.scene, this.camera, {
+      autoPreventDefault: true,
+    });
+  }
+
   dispose() {
     window.cancelAnimationFrame(this.renderRaf);
     window.cancelAnimationFrame(this.cameraControlsRaf);
     this.renderer.dispose();
+    this.controls.dispose();
     this.interaction.removeAllListeners ??= () => {};
     this.interaction.destroy();
-    this.controls.dispose();
-    THREE.dispose(this.scene);
+    dispose(this.scene);
   }
 
   render() {
@@ -110,9 +109,9 @@ export class Graphic {
   }
 
   fitAndCenter() {
-    const target = vec3();
+    const target = new Vector3();
 
-    const viewBox = new THREE.CameraViewBox();
+    const viewBox = new CameraViewBox();
     viewBox.setViewFromCamera(this.camera);
     viewBox.setFitRatio(this.fitRatio);
     viewBox.setFromObject(this.scene);
@@ -147,6 +146,6 @@ export class Graphic {
   }
 
   resetCamera() {
-    this.setCamera(vec3(-1000, -1000, 1000), vec3(0, 0, 1));
+    this.setCamera(new Vector3(-1000, -1000, 1000), new Vector3(0, 0, 1));
   }
 }

@@ -1,7 +1,7 @@
-import * as THREE from '@/graphic/three';
 import _ from 'lodash';
+import { WebGLRenderer } from 'three';
 
-export class Renderer extends THREE.WebGLRenderer {
+export class Renderer extends WebGLRenderer {
   constructor(container, options = {}) {
     options = _.merge(
       {
@@ -34,12 +34,6 @@ export class Renderer extends THREE.WebGLRenderer {
 
   get height() {
     return this.container.clientHeight;
-  }
-
-  dispose() {
-    this.forceContextLoss();
-    super.dispose();
-    this.domElement = null;
   }
 
   resize(rect = null) {
