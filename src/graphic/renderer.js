@@ -19,7 +19,7 @@ export class Renderer extends THREE.WebGLRenderer {
     this.domElement.style.outline = 'none';
     this.domElement.tabIndex = 0;
 
-    this.setPixelRatio(window.devicePixelRatio ?? 0);
+    this.setPixelRatio(window.devicePixelRatio);
     this.setClearColor(0xffffff, 0);
     this.resize();
   }

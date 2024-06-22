@@ -13,11 +13,12 @@ export function vec3(x = 0, y = 0, z = 0) {
 }
 
 export function dispose(object) {
-  object.traverse((object) => {
-    object.geometry?.dispose();
-    object.material?.dispose();
-    object.texture?.dispose();
-    object.clear?.();
-    object.dispose?.();
-  });
+  for (const child of object.children) {
+    dispose(child);
+  }
+  object.geometry?.dispose();
+  object.material?.dispose();
+  object.texture?.dispose();
+  object.dispose?.();
+  object.clear?.();
 }
