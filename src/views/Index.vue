@@ -3,11 +3,22 @@
 </template>
 
 <script setup>
+import { CubeEdgesGeometry } from '@/graphic/cubeEdgesGeometry';
+import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
 import { palette } from '@/graphic/palette';
 import { useResizeObserver } from '@vueuse/core';
-import { BoxGeometry, InstancedMesh, Matrix4, Mesh, MeshBasicMaterial } from 'three';
+import {
+  BoxGeometry,
+  Group,
+  InstancedMesh,
+  LineBasicMaterial,
+  LineSegments,
+  Matrix4,
+  Mesh,
+  MeshBasicMaterial,
+} from 'three';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const container = ref();
@@ -18,7 +29,7 @@ class MazeGraphic extends Graphic {
   paint() {
     dispose(this.scene);
 
-    const size = 4;
+    const size = 1;
     const mesh = new InstancedMesh(
       new BoxGeometry(),
       new MeshBasicMaterial({ color: palette.brand3 }),
@@ -28,7 +39,7 @@ class MazeGraphic extends Graphic {
     mesh.translateY(-size / 2 + 1 / 2);
     mesh.translateZ(-size / 2 + 1 / 2);
 
-    this.scene.add(mesh);
+    // this.scene.add(mesh);
 
     let count = 0;
     for (let i = 0; i < size; i++) {
@@ -49,6 +60,41 @@ class MazeGraphic extends Graphic {
       new MeshBasicMaterial({ opacity: 0, transparent: true }),
     );
     this.scene.add(phantom);
+
+    //
+    const g1 = new Group();
+    g1.add(new Mesh(new CubeGeometry(), new MeshBasicMaterial({ color: palette.brand3 })));
+    g1.add(
+      new LineSegments(
+        new CubeEdgesGeometry(
+          0b111111 & ~(CubeEdgesGeometry.MaskEdgesPY | CubeEdgesGeometry.MaskEdgesPZ),
+        ),
+        new LineBasicMaterial({ color: palette.shade8 }),
+      ),
+    );
+    this.scene.add(g1);
+
+    const g2 = new Group();
+    g2.add(new Mesh(new CubeGeometry(), new MeshBasicMaterial({ color: palette.brand3 })));
+    g2.add(
+      new LineSegments(
+        new CubeEdgesGeometry(0b111111 & ~CubeEdgesGeometry.MaskEdgesNY),
+        new LineBasicMaterial({ color: palette.shade8 }),
+      ),
+    );
+    g2.translateY(1);
+    this.scene.add(g2);
+
+    const g3 = new Group();
+    g3.add(new Mesh(new CubeGeometry(), new MeshBasicMaterial({ color: palette.brand3 })));
+    g3.add(
+      new LineSegments(
+        new CubeEdgesGeometry(0b111111 & ~CubeEdgesGeometry.MaskEdgesNZ),
+        new LineBasicMaterial({ color: palette.shade8 }),
+      ),
+    );
+    g3.translateZ(1);
+    this.scene.add(g3);
 
     this.render();
   }
