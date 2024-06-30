@@ -67,7 +67,9 @@ class MazeGraphic extends Graphic {
     g1.add(
       new LineSegments(
         new CubeEdgesGeometry(
-          0b111111 & ~(CubeEdgesGeometry.MaskEdgesPY | CubeEdgesGeometry.MaskEdgesPZ),
+          CubeEdgesGeometry.NeighborPY |
+            CubeEdgesGeometry.NeighborPZ |
+            CubeEdgesGeometry.NeighborNZ,
         ),
         new LineBasicMaterial({ color: palette.shade8 }),
       ),
@@ -78,7 +80,7 @@ class MazeGraphic extends Graphic {
     g2.add(new Mesh(new CubeGeometry(), new MeshBasicMaterial({ color: palette.brand3 })));
     g2.add(
       new LineSegments(
-        new CubeEdgesGeometry(0b111111 & ~CubeEdgesGeometry.MaskEdgesNY),
+        new CubeEdgesGeometry(CubeEdgesGeometry.NeighborNY),
         new LineBasicMaterial({ color: palette.shade8 }),
       ),
     );
@@ -89,12 +91,23 @@ class MazeGraphic extends Graphic {
     g3.add(new Mesh(new CubeGeometry(), new MeshBasicMaterial({ color: palette.brand3 })));
     g3.add(
       new LineSegments(
-        new CubeEdgesGeometry(0b111111 & ~CubeEdgesGeometry.MaskEdgesNZ),
+        new CubeEdgesGeometry(CubeEdgesGeometry.NeighborNZ),
         new LineBasicMaterial({ color: palette.shade8 }),
       ),
     );
     g3.translateZ(1);
     this.scene.add(g3);
+
+    const g4 = new Group();
+    g4.add(new Mesh(new CubeGeometry(), new MeshBasicMaterial({ color: palette.brand3 })));
+    g4.add(
+      new LineSegments(
+        new CubeEdgesGeometry(CubeEdgesGeometry.NeighborPZ),
+        new LineBasicMaterial({ color: palette.shade8 }),
+      ),
+    );
+    g4.translateZ(-1);
+    this.scene.add(g4);
 
     this.render();
   }
