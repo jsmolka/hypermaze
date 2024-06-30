@@ -7,32 +7,48 @@ import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
 import { palette } from '@/graphic/palette';
 import { useResizeObserver } from '@vueuse/core';
-import {
-  BoxGeometry,
-  EdgesGeometry,
-  LineBasicMaterial,
-  LineSegments,
-  Mesh,
-  MeshBasicMaterial,
-} from 'three';
+import { BoxGeometry, InstancedMesh, Matrix4, Mesh, MeshBasicMaterial } from 'three';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const container = ref();
+
+// https://discourse.threejs.org/t/use-edgesgeometry-in-an-instancedmesh/16723
 
 class MazeGraphic extends Graphic {
   paint() {
     dispose(this.scene);
 
-    const cube = new Mesh(
-      new BoxGeometry(100, 100, 100),
+    const size = 4;
+    const mesh = new InstancedMesh(
+      new BoxGeometry(),
       new MeshBasicMaterial({ color: palette.brand3 }),
+      size ** 3,
     );
-    const edge = new LineSegments(
-      new EdgesGeometry(cube.geometry),
-      new LineBasicMaterial({ color: palette.shade8 }),
+    mesh.translateX(-size / 2 + 1 / 2);
+    mesh.translateY(-size / 2 + 1 / 2);
+    mesh.translateZ(-size / 2 + 1 / 2);
+
+    this.scene.add(mesh);
+
+    let count = 0;
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        for (let k = 0; k < size; k++) {
+          if (Math.random() < 0.5) {
+            continue;
+          }
+
+          mesh.setMatrixAt(count++, new Matrix4().setPosition(i, j, k));
+        }
+      }
+    }
+    mesh.count = count;
+
+    const phantom = new Mesh(
+      new BoxGeometry(size, size, size),
+      new MeshBasicMaterial({ opacity: 0, transparent: true }),
     );
-    this.scene.add(cube);
-    this.scene.add(edge);
+    this.scene.add(phantom);
 
     this.render();
   }

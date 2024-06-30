@@ -2,8 +2,8 @@ export class Maze {
   static Wall = 0;
   static Path = 1;
 
-  constructor() {
-    this.resize(100);
+  constructor(size = 100) {
+    this.resize(size);
   }
 
   resize(size, value = Maze.Wall) {
