@@ -74,8 +74,6 @@ export class Graphic {
     window.cancelAnimationFrame(this.cameraControlsRaf);
     this.renderer.dispose();
     this.controls.dispose();
-    this.interaction.removeAllListeners ??= () => {};
-    this.interaction.destroy();
     dispose(this.scene);
   }
 
