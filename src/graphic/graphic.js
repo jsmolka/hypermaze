@@ -4,7 +4,6 @@ import { dispose } from '@/graphic/dispose';
 import { Renderer } from '@/graphic/renderer.js';
 import _ from 'lodash';
 import { Clock, PerspectiveCamera, Scene, Vector3 } from 'three';
-import { Interaction } from 'three.interaction/src/index';
 
 export class Graphic {
   constructor(container, options = {}) {
@@ -23,7 +22,6 @@ export class Graphic {
     this.initScene();
     this.initCamera();
     this.initCameraControls();
-    this.initInteraction();
   }
 
   get cameraFrustum() {
@@ -69,12 +67,6 @@ export class Graphic {
       this.cameraControlsRaf = window.requestAnimationFrame(update);
     };
     update();
-  }
-
-  initInteraction() {
-    this.interaction = new Interaction(this.renderer, this.scene, this.camera, {
-      autoPreventDefault: true,
-    });
   }
 
   dispose() {

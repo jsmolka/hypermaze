@@ -34,7 +34,6 @@
     "radix-vue": "^1.8.4",
     "tailwind-merge": "^2.3.0",
     "three": "^0.165.0",
-    "three.interaction": "^0.2.3",
     "vue": "^3.4.29",
     "vue-router": "^4.4.0"
   },
