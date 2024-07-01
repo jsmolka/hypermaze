@@ -7,6 +7,7 @@ import { CubeEdgesGeometry } from '@/graphic/cubeEdgesGeometry';
 import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
+import { Neighbor } from '@/graphic/neighbor';
 import { palette } from '@/graphic/palette';
 import { useResizeObserver } from '@vueuse/core';
 import {
@@ -66,11 +67,7 @@ class MazeGraphic extends Graphic {
     g1.add(new Mesh(new CubeGeometry(), new MeshBasicMaterial({ color: palette.brand3 })));
     g1.add(
       new LineSegments(
-        new CubeEdgesGeometry(
-          CubeEdgesGeometry.NeighborPY |
-            CubeEdgesGeometry.NeighborPZ |
-            CubeEdgesGeometry.NeighborNZ,
-        ),
+        new CubeEdgesGeometry(Neighbor.py | Neighbor.pz | Neighbor.nz),
         new LineBasicMaterial({ color: palette.shade8 }),
       ),
     );
@@ -80,7 +77,7 @@ class MazeGraphic extends Graphic {
     g2.add(new Mesh(new CubeGeometry(), new MeshBasicMaterial({ color: palette.brand3 })));
     g2.add(
       new LineSegments(
-        new CubeEdgesGeometry(CubeEdgesGeometry.NeighborNY),
+        new CubeEdgesGeometry(Neighbor.ny),
         new LineBasicMaterial({ color: palette.shade8 }),
       ),
     );
@@ -91,7 +88,7 @@ class MazeGraphic extends Graphic {
     g3.add(new Mesh(new CubeGeometry(), new MeshBasicMaterial({ color: palette.brand3 })));
     g3.add(
       new LineSegments(
-        new CubeEdgesGeometry(CubeEdgesGeometry.NeighborNZ),
+        new CubeEdgesGeometry(Neighbor.nz),
         new LineBasicMaterial({ color: palette.shade8 }),
       ),
     );
@@ -102,7 +99,7 @@ class MazeGraphic extends Graphic {
     g4.add(new Mesh(new CubeGeometry(), new MeshBasicMaterial({ color: palette.brand3 })));
     g4.add(
       new LineSegments(
-        new CubeEdgesGeometry(CubeEdgesGeometry.NeighborPZ),
+        new CubeEdgesGeometry(Neighbor.pz),
         new LineBasicMaterial({ color: palette.shade8 }),
       ),
     );

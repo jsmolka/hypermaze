@@ -1,14 +1,8 @@
+import { Neighbor } from '@/graphic/neighbor';
 import { BufferGeometry, Float32BufferAttribute } from 'three';
 
 export class CubeEdgesGeometry extends BufferGeometry {
-  static NeighborPX = 1 << 0;
-  static NeighborNX = 1 << 1;
-  static NeighborPY = 1 << 2;
-  static NeighborNY = 1 << 3;
-  static NeighborPZ = 1 << 4;
-  static NeighborNZ = 1 << 5;
-
-  constructor(neighbors, size = 1) {
+  constructor(neighborMask, size = 1) {
     super();
 
     const ps = +size / 2;
@@ -17,54 +11,54 @@ export class CubeEdgesGeometry extends BufferGeometry {
 
     const hasEdge = (flag1, flag2) => {
       const mask = flag1 | flag2;
-      return (neighbors & mask) === 0 || (neighbors & mask) === mask;
+      return (neighborMask & mask) === 0 || (neighborMask & mask) === mask;
     };
 
-    if (hasEdge(CubeEdgesGeometry.NeighborPX, CubeEdgesGeometry.NeighborPY)) {
+    if (hasEdge(Neighbor.px, Neighbor.py)) {
       vertices.push(ps, ps, ns);
       vertices.push(ps, ps, ps);
     }
-    if (hasEdge(CubeEdgesGeometry.NeighborPX, CubeEdgesGeometry.NeighborNY)) {
+    if (hasEdge(Neighbor.px, Neighbor.ny)) {
       vertices.push(ps, ns, ns);
       vertices.push(ps, ns, ps);
     }
-    if (hasEdge(CubeEdgesGeometry.NeighborPX, CubeEdgesGeometry.NeighborPZ)) {
+    if (hasEdge(Neighbor.px, Neighbor.pz)) {
       vertices.push(ps, ns, ps);
       vertices.push(ps, ps, ps);
     }
-    if (hasEdge(CubeEdgesGeometry.NeighborPX, CubeEdgesGeometry.NeighborNZ)) {
+    if (hasEdge(Neighbor.px, Neighbor.nz)) {
       vertices.push(ps, ns, ns);
       vertices.push(ps, ps, ns);
     }
-    if (hasEdge(CubeEdgesGeometry.NeighborNX, CubeEdgesGeometry.NeighborPY)) {
+    if (hasEdge(Neighbor.nx, Neighbor.py)) {
       vertices.push(ns, ps, ns);
       vertices.push(ns, ps, ps);
     }
-    if (hasEdge(CubeEdgesGeometry.NeighborNX, CubeEdgesGeometry.NeighborNY)) {
+    if (hasEdge(Neighbor.nx, Neighbor.ny)) {
       vertices.push(ns, ns, ns);
       vertices.push(ns, ns, ps);
     }
-    if (hasEdge(CubeEdgesGeometry.NeighborNX, CubeEdgesGeometry.NeighborPZ)) {
+    if (hasEdge(Neighbor.nx, Neighbor.pz)) {
       vertices.push(ns, ns, ps);
       vertices.push(ns, ps, ps);
     }
-    if (hasEdge(CubeEdgesGeometry.NeighborNX, CubeEdgesGeometry.NeighborNZ)) {
+    if (hasEdge(Neighbor.nx, Neighbor.nz)) {
       vertices.push(ns, ns, ns);
       vertices.push(ns, ps, ns);
     }
-    if (hasEdge(CubeEdgesGeometry.NeighborPY, CubeEdgesGeometry.NeighborPZ)) {
+    if (hasEdge(Neighbor.py, Neighbor.pz)) {
       vertices.push(ns, ps, ps);
       vertices.push(ps, ps, ps);
     }
-    if (hasEdge(CubeEdgesGeometry.NeighborPY, CubeEdgesGeometry.NeighborNZ)) {
+    if (hasEdge(Neighbor.py, Neighbor.nz)) {
       vertices.push(ns, ps, ns);
       vertices.push(ps, ps, ns);
     }
-    if (hasEdge(CubeEdgesGeometry.NeighborNY, CubeEdgesGeometry.NeighborPZ)) {
+    if (hasEdge(Neighbor.ny, Neighbor.pz)) {
       vertices.push(ns, ns, ps);
       vertices.push(ps, ns, ps);
     }
-    if (hasEdge(CubeEdgesGeometry.NeighborNY, CubeEdgesGeometry.NeighborNZ)) {
+    if (hasEdge(Neighbor.ny, Neighbor.nz)) {
       vertices.push(ns, ns, ns);
       vertices.push(ps, ns, ns);
     }
