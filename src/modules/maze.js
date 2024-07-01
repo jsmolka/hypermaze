@@ -33,6 +33,10 @@ export class Maze {
     this.create();
   }
 
+  get length() {
+    return this.data.length;
+  }
+
   resize(size, value = Maze.Wall) {
     this.size = size;
     const iterable = { length: 2 * size - 1 };

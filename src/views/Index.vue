@@ -4,6 +4,7 @@
 
 <script setup>
 import { CubeEdgesGeometry } from '@/graphic/cubeEdgesGeometry';
+import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
 import { Neighbor } from '@/graphic/neighbor';
@@ -12,6 +13,9 @@ import { Maze } from '@/modules/maze';
 import { useResizeObserver } from '@vueuse/core';
 import {
   BoxGeometry,
+  Group,
+  InstancedBufferAttribute,
+  InstancedBufferGeometry,
   InstancedMesh,
   LineBasicMaterial,
   LineSegments,
@@ -23,25 +27,27 @@ import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const container = ref();
 
-// https://discourse.threejs.org/t/use-edgesgeometry-in-an-instancedmesh/16723
-
 class MazeGraphic extends Graphic {
   paint() {
     dispose(this.scene);
 
-    const size = 20;
+    const cubeEdgesPositions = Array.from({ length: 1 << 6 }, () => []);
+
+    const size = 10;
     const maze = new Maze(size);
+
+    const group = new Group();
+    group.translateX(-maze.length / 2 + 1 / 2);
+    group.translateY(-maze.length / 2 + 1 / 2);
+    group.translateZ(-maze.length / 2 + 1 / 2);
+    this.scene.add(group);
 
     const mesh = new InstancedMesh(
       new BoxGeometry(),
       new MeshBasicMaterial({ color: palette.brand3 }),
-      (2 * size) ** 3,
+      maze.length ** 3,
     );
-    mesh.translateX(-size + 1 / 2);
-    mesh.translateY(-size + 1 / 2);
-    mesh.translateZ(-size + 1 / 2);
-
-    this.scene.add(mesh);
+    group.add(mesh);
 
     let count = 0;
     for (let i = 0; i < 2 * size - 1; i++) {
@@ -70,28 +76,50 @@ class MazeGraphic extends Graphic {
               mask |= Neighbor.nz;
             }
 
-            const edges = new LineSegments(
-              new CubeEdgesGeometry(mask),
-              new LineBasicMaterial({ color: palette.shade8 }),
-            );
-            edges.translateX(i);
-            edges.translateY(j);
-            edges.translateZ(k);
-            edges.translateX(-size + 1 / 2);
-            edges.translateY(-size + 1 / 2);
-            edges.translateZ(-size + 1 / 2);
-            this.scene.add(edges);
+            cubeEdgesPositions[mask].push(i, j, k);
           }
         }
       }
     }
     mesh.count = count;
 
-    const phantom = new Mesh(
-      new BoxGeometry(size, size, size),
+    // Edges
+    const cubeEdgesMaterial = new LineBasicMaterial({
+      color: palette.shade8,
+      onBeforeCompile: (shader) => {
+        shader.vertexShader = `
+    	    attribute vec3 offset;
+          ${shader.vertexShader}
+        `.replace(
+          `#include <begin_vertex>`,
+          `#include <begin_vertex>
+           transformed += offset;`,
+        );
+      },
+    });
+
+    for (const [neighborMask, positions] of cubeEdgesPositions.entries()) {
+      if (positions.length === 0) {
+        continue;
+      }
+
+      const cubeEdgesGeometry = new CubeEdgesGeometry(neighborMask);
+      const instancedCubeEdgesGeometry = new InstancedBufferGeometry().copy(cubeEdgesGeometry);
+      instancedCubeEdgesGeometry.instanceCount = positions.length;
+      instancedCubeEdgesGeometry.setAttribute(
+        'offset',
+        new InstancedBufferAttribute(new Float32Array(positions), 3),
+      );
+
+      group.add(new LineSegments(instancedCubeEdgesGeometry, cubeEdgesMaterial));
+    }
+
+    // Bounding box
+    const bbox = new Mesh(
+      new CubeGeometry(maze.length),
       new MeshBasicMaterial({ opacity: 0, transparent: true }),
     );
-    this.scene.add(phantom);
+    this.scene.add(bbox);
 
     this.render();
   }
