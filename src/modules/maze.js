@@ -7,7 +7,7 @@ export class Maze {
   }
 
   resize(size, value = Maze.Wall) {
-    const iterable = { length: 2 * size + 1 };
+    const iterable = { length: size };
     this.data = Array.from(iterable, () =>
       Array.from(iterable, () => Array.from(iterable, () => value)),
     );
