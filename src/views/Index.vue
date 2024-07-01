@@ -12,7 +12,6 @@ import { palette } from '@/graphic/palette';
 import { Maze } from '@/modules/maze';
 import { useResizeObserver } from '@vueuse/core';
 import {
-  BoxGeometry,
   Group,
   InstancedBufferAttribute,
   InstancedBufferGeometry,
@@ -26,15 +25,13 @@ import {
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const container = ref();
+const size = ref(50);
 
 class MazeGraphic extends Graphic {
   paint() {
     dispose(this.scene);
 
-    const cubeEdgesPositions = Array.from({ length: 1 << 6 }, () => []);
-
-    const size = 10;
-    const maze = new Maze(size);
+    const maze = new Maze(size.value);
 
     const group = new Group();
     group.translateX(-maze.length / 2 + 1 / 2);
@@ -42,49 +39,39 @@ class MazeGraphic extends Graphic {
     group.translateZ(-maze.length / 2 + 1 / 2);
     this.scene.add(group);
 
-    const mesh = new InstancedMesh(
-      new BoxGeometry(),
+    const cubes = new InstancedMesh(
+      new CubeGeometry(),
       new MeshBasicMaterial({ color: palette.brand3 }),
       maze.length ** 3,
     );
-    group.add(mesh);
+    group.add(cubes);
 
     let count = 0;
-    for (let i = 0; i < 2 * size - 1; i++) {
-      for (let j = 0; j < 2 * size - 1; j++) {
-        for (let k = 0; k < 2 * size - 1; k++) {
-          if (maze.get(i, j, k) === Maze.Path) {
-            mesh.setMatrixAt(count++, new Matrix4().setPosition(i, j, k));
-
-            let mask = 0;
-            if (maze.get(i + 1, j, k) === Maze.Path) {
-              mask |= Neighbor.px;
-            }
-            if (maze.get(i - 1, j, k) === Maze.Path) {
-              mask |= Neighbor.nx;
-            }
-            if (maze.get(i, j + 1, k) === Maze.Path) {
-              mask |= Neighbor.py;
-            }
-            if (maze.get(i, j - 1, k) === Maze.Path) {
-              mask |= Neighbor.ny;
-            }
-            if (maze.get(i, j, k + 1) === Maze.Path) {
-              mask |= Neighbor.pz;
-            }
-            if (maze.get(i, j, k - 1) === Maze.Path) {
-              mask |= Neighbor.nz;
-            }
-
-            cubeEdgesPositions[mask].push(i, j, k);
+    const edgesPositions = Array.from({ length: 1 << 6 }, () => []);
+    for (let x = 0; x < maze.length; x++) {
+      for (let y = 0; y < maze.length; y++) {
+        for (let z = 0; z < maze.length; z++) {
+          if (maze.get(x, y, z) !== Maze.Path) {
+            continue;
           }
+
+          cubes.setMatrixAt(count++, new Matrix4().setPosition(x, y, z));
+
+          let mask = 0;
+          if (maze.get(x + 1, y, z) === Maze.Path) mask |= Neighbor.px;
+          if (maze.get(x - 1, y, z) === Maze.Path) mask |= Neighbor.nx;
+          if (maze.get(x, y + 1, z) === Maze.Path) mask |= Neighbor.py;
+          if (maze.get(x, y - 1, z) === Maze.Path) mask |= Neighbor.ny;
+          if (maze.get(x, y, z + 1) === Maze.Path) mask |= Neighbor.pz;
+          if (maze.get(x, y, z - 1) === Maze.Path) mask |= Neighbor.nz;
+          edgesPositions[mask].push(x, y, z);
         }
       }
     }
-    mesh.count = count;
+    cubes.count = count;
 
     // Edges
-    const cubeEdgesMaterial = new LineBasicMaterial({
+    const edgesMaterial = new LineBasicMaterial({
       color: palette.shade8,
       onBeforeCompile: (shader) => {
         shader.vertexShader = `
@@ -98,20 +85,20 @@ class MazeGraphic extends Graphic {
       },
     });
 
-    for (const [neighborMask, positions] of cubeEdgesPositions.entries()) {
+    for (const [neighborMask, positions] of edgesPositions.entries()) {
       if (positions.length === 0) {
         continue;
       }
 
-      const cubeEdgesGeometry = new CubeEdgesGeometry(neighborMask);
-      const instancedCubeEdgesGeometry = new InstancedBufferGeometry().copy(cubeEdgesGeometry);
-      instancedCubeEdgesGeometry.instanceCount = positions.length;
-      instancedCubeEdgesGeometry.setAttribute(
+      const edgesGeometry = new CubeEdgesGeometry(neighborMask);
+      const instancedEdgesGeometry = new InstancedBufferGeometry().copy(edgesGeometry);
+      instancedEdgesGeometry.instanceCount = positions.length;
+      instancedEdgesGeometry.setAttribute(
         'offset',
         new InstancedBufferAttribute(new Float32Array(positions), 3),
       );
 
-      group.add(new LineSegments(instancedCubeEdgesGeometry, cubeEdgesMaterial));
+      group.add(new LineSegments(instancedEdgesGeometry, edgesMaterial));
     }
 
     // Bounding box
