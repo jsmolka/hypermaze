@@ -98,7 +98,9 @@ class MazeGraphic extends Graphic {
         new InstancedBufferAttribute(new Float32Array(positions), 3),
       );
 
-      group.add(new LineSegments(instancedEdgesGeometry, edgesMaterial));
+      const edges = new LineSegments(instancedEdgesGeometry, edgesMaterial);
+      edges.frustumCulled = false;
+      group.add(edges);
     }
 
     // Bounding box
