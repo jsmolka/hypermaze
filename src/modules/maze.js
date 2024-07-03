@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { randint, shuffle } from '@/utils/random';
 
 const dirOne = [
   (x, y, z) => [x + 1, y, z],
@@ -18,11 +18,7 @@ const dirTwo = [
   (x, y, z) => [x, y, z - 2],
 ];
 
-function* randomIndex() {
-  for (const index of _.shuffle([0, 1, 2, 3, 4, 5])) {
-    yield index;
-  }
-}
+const indices = [0, 1, 2, 3, 4, 5];
 
 export class Maze {
   static Wall = 0;
@@ -60,7 +56,8 @@ export class Maze {
   }
 
   walk(x, y, z) {
-    for (const index of randomIndex()) {
+    shuffle(indices);
+    for (const index of indices) {
       const [x2, y2, z2] = dirTwo[index](x, y, z);
       if (this.get(x2, y2, z2) === Maze.Wall) {
         const [x1, y1, z1] = dirOne[index](x, y, z);
@@ -86,9 +83,9 @@ export class Maze {
   }
 
   create() {
-    let x = 2 * _.random(this.size - 1);
-    let y = 2 * _.random(this.size - 1);
-    let z = 2 * _.random(this.size - 1);
+    let x = 2 * randint(this.size);
+    let y = 2 * randint(this.size);
+    let z = 2 * randint(this.size);
     this.set(x, y, z, Maze.Path);
 
     const stack = [];
