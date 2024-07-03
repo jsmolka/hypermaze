@@ -1,4 +1,4 @@
-import { randint, shuffle } from '@/utils/random';
+import { randomInt, shuffle } from '@/utils/random';
 
 const dirOne = [
   (x, y, z) => [x + 1, y, z],
@@ -83,9 +83,9 @@ export class Maze {
   }
 
   create() {
-    let x = 2 * randint(this.size);
-    let y = 2 * randint(this.size);
-    let z = 2 * randint(this.size);
+    let x = 2 * randomInt(this.size);
+    let y = 2 * randomInt(this.size);
+    let z = 2 * randomInt(this.size);
     this.set(x, y, z, Maze.Path);
 
     const stack = [];
