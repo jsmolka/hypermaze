@@ -8,8 +8,8 @@ import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
 import { Neighbor } from '@/graphic/neighbor';
-import { palette } from '@/graphic/palette';
 import { Maze } from '@/modules/maze';
+import { colors } from '@/utils/colors';
 import { useResizeObserver } from '@vueuse/core';
 import {
   Group,
@@ -41,7 +41,7 @@ class MazeGraphic extends Graphic {
 
     const cubes = new InstancedMesh(
       new CubeGeometry(),
-      new MeshBasicMaterial({ color: palette.brand3 }),
+      new MeshBasicMaterial({ color: colors.brand3.int }),
       maze.length ** 3,
     );
     group.add(cubes);
@@ -72,7 +72,7 @@ class MazeGraphic extends Graphic {
 
     // Edges
     const edgesMaterial = new LineBasicMaterial({
-      color: palette.shade8,
+      color: colors.shade8.int,
       onBeforeCompile: (shader) => {
         shader.vertexShader = `
     	    attribute vec3 offset;
