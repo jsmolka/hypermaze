@@ -32,39 +32,43 @@ class MazeGraphic extends Graphic {
     dispose(this.scene);
 
     const maze = new Maze(size.value);
+    const dims = 2 * maze.size - 1;
 
     const group = new Group();
-    group.translateX(-maze.length / 2 + 1 / 2);
-    group.translateY(-maze.length / 2 + 1 / 2);
-    group.translateZ(-maze.length / 2 + 1 / 2);
+    group.translateX(-dims / 2 + 1 / 2);
+    group.translateY(-dims / 2 + 1 / 2);
+    group.translateZ(-dims / 2 + 1 / 2);
     this.scene.add(group);
 
     const cubes = new InstancedMesh(
       new CubeGeometry(),
       new MeshBasicMaterial({ color: colors.brand3.int }),
-      maze.length ** 3,
+      dims ** 3,
     );
     group.add(cubes);
 
     let count = 0;
     const edgesPositions = Array.from({ length: 1 << 6 }, () => []);
-    for (let x = 0; x < maze.length; x++) {
-      for (let y = 0; y < maze.length; y++) {
-        for (let z = 0; z < maze.length; z++) {
-          if (maze.get(x, y, z) !== Maze.Path) {
-            continue;
+    for (let x = 0; x < maze.size; x++) {
+      for (let y = 0; y < maze.size; y++) {
+        for (let z = 0; z < maze.size; z++) {
+          cubes.setMatrixAt(count++, new Matrix4().setPosition(2 * x, 2 * y, 2 * z));
+
+          const neighbors = maze.data[maze.index(x, y, z)];
+          edgesPositions[neighbors].push(2 * x, 2 * y, 2 * z);
+
+          if (neighbors & Neighbor.px) {
+            cubes.setMatrixAt(count++, new Matrix4().setPosition(2 * x + 1, 2 * y, 2 * z));
+            edgesPositions[Neighbor.px | Neighbor.nx].push(2 * x + 1, 2 * y, 2 * z);
           }
-
-          cubes.setMatrixAt(count++, new Matrix4().setPosition(x, y, z));
-
-          let mask = 0;
-          if (maze.get(x + 1, y, z) === Maze.Path) mask |= Neighbor.px;
-          if (maze.get(x - 1, y, z) === Maze.Path) mask |= Neighbor.nx;
-          if (maze.get(x, y + 1, z) === Maze.Path) mask |= Neighbor.py;
-          if (maze.get(x, y - 1, z) === Maze.Path) mask |= Neighbor.ny;
-          if (maze.get(x, y, z + 1) === Maze.Path) mask |= Neighbor.pz;
-          if (maze.get(x, y, z - 1) === Maze.Path) mask |= Neighbor.nz;
-          edgesPositions[mask].push(x, y, z);
+          if (neighbors & Neighbor.py) {
+            cubes.setMatrixAt(count++, new Matrix4().setPosition(2 * x, 2 * y + 1, 2 * z));
+            edgesPositions[Neighbor.py | Neighbor.ny].push(2 * x, 2 * y + 1, 2 * z);
+          }
+          if (neighbors & Neighbor.pz) {
+            cubes.setMatrixAt(count++, new Matrix4().setPosition(2 * x, 2 * y, 2 * z + 1));
+            edgesPositions[Neighbor.pz | Neighbor.nz].push(2 * x, 2 * y, 2 * z + 1);
+          }
         }
       }
     }
@@ -105,7 +109,7 @@ class MazeGraphic extends Graphic {
 
     // Bounding box
     const bbox = new Mesh(
-      new CubeGeometry(maze.length),
+      new CubeGeometry(2 * maze.size - 1),
       new MeshBasicMaterial({ opacity: 0, transparent: true }),
     );
     this.scene.add(bbox);

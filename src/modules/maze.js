@@ -1,69 +1,73 @@
 import { randomInt, shuffle } from '@/utils/random';
 
-const dirOne = [
-  (x, y, z) => [x + 1, y, z],
-  (x, y, z) => [x - 1, y, z],
-  (x, y, z) => [x, y + 1, z],
-  (x, y, z) => [x, y - 1, z],
-  (x, y, z) => [x, y, z + 1],
-  (x, y, z) => [x, y, z - 1],
-];
-
-const dirTwo = [
-  (x, y, z) => [x + 2, y, z],
-  (x, y, z) => [x - 2, y, z],
-  (x, y, z) => [x, y + 2, z],
-  (x, y, z) => [x, y - 2, z],
-  (x, y, z) => [x, y, z + 2],
-  (x, y, z) => [x, y, z - 2],
-];
-
-const indices = [0, 1, 2, 3, 4, 5];
+const neighbor = Object.freeze({
+  px: 1 << 0,
+  nx: 1 << 1,
+  py: 1 << 2,
+  ny: 1 << 3,
+  pz: 1 << 4,
+  nz: 1 << 5,
+});
 
 export class Maze {
-  static Wall = 0;
-  static Path = 1;
+  constructor(size) {
+    this.data = new Uint8Array(size ** 3);
+    this.size = size;
+    this.stride = {
+      x: 1,
+      y: size,
+      z: size ** 2,
+    };
 
-  constructor(size = 100) {
-    this.resize(size);
+    this.directions = [
+      (x, y, z) => [x + 1, y, z, neighbor.px, neighbor.nx],
+      (x, y, z) => [x - 1, y, z, neighbor.nx, neighbor.px],
+      (x, y, z) => [x, y + 1, z, neighbor.py, neighbor.ny],
+      (x, y, z) => [x, y - 1, z, neighbor.ny, neighbor.py],
+      (x, y, z) => [x, y, z + 1, neighbor.pz, neighbor.nz],
+      (x, y, z) => [x, y, z - 1, neighbor.nz, neighbor.pz],
+    ];
+
     this.create();
   }
 
-  get length() {
-    return this.data.length;
+  index(x, y, z) {
+    return x + this.stride.y * y + this.stride.z * z;
   }
 
-  resize(size, value = Maze.Wall) {
-    this.size = size;
-    const iterable = { length: 2 * size - 1 };
-    this.data = Array.from(iterable, () =>
-      Array.from(iterable, () => Array.from(iterable, () => value)),
-    );
-  }
+  create() {
+    if (this.size <= 1) {
+      return;
+    }
 
-  get(x, y, z) {
-    const length = this.data.length;
-    return x >= 0 && x < length && y >= 0 && y < length && z >= 0 && z < length
-      ? this.data[x][y][z]
-      : undefined;
-  }
+    let x = randomInt(this.size);
+    let y = randomInt(this.size);
+    let z = randomInt(this.size);
 
-  set(x, y, z, value) {
-    const length = this.data.length;
-    if (x >= 0 && x < length && y >= 0 && y < length && z >= 0 && z < length) {
-      this.data[x][y][z] = value;
+    const stack = [];
+    while (x != null) {
+      while (x != null) {
+        stack.push([x, y, z]);
+        [x, y, z] = this.walk(x, y, z);
+      }
+      [x, y, z] = this.backtrack(stack);
     }
   }
 
-  walk(x, y, z) {
-    shuffle(indices);
-    for (const index of indices) {
-      const [x2, y2, z2] = dirTwo[index](x, y, z);
-      if (this.get(x2, y2, z2) === Maze.Wall) {
-        const [x1, y1, z1] = dirOne[index](x, y, z);
-        this.set(x1, y1, z1, Maze.Path);
-        this.set(x2, y2, z2, Maze.Path);
-        return [x2, y2, z2];
+  walk(cx, cy, cz) {
+    shuffle(this.directions);
+    for (const direction of this.directions) {
+      const [nx, ny, nz, np, nn] = direction(cx, cy, cz);
+      if (nx < 0 || nx >= this.size) continue;
+      if (ny < 0 || ny >= this.size) continue;
+      if (nz < 0 || nz >= this.size) continue;
+
+      const ni = this.index(nx, ny, nz);
+      if (this.data[ni] === 0) {
+        const ci = this.index(cx, cy, cz);
+        this.data[ci] |= np;
+        this.data[ni] |= nn;
+        return [nx, ny, nz];
       }
     }
     return [null, null, null];
@@ -71,30 +75,17 @@ export class Maze {
 
   backtrack(stack) {
     while (stack.length > 0) {
-      const [x, y, z] = stack.pop();
-      for (const direction of dirTwo) {
-        const [x2, y2, z2] = direction(x, y, z);
-        if (this.get(x2, y2, z2) === Maze.Wall) {
-          return [x, y, z];
+      const [cx, cy, cz] = stack.pop();
+      for (const direction of this.directions) {
+        const [nx, ny, nz, ..._] = direction(cx, cy, cz);
+        if (nx < 0 || nx >= this.size) continue;
+        if (ny < 0 || ny >= this.size) continue;
+        if (nz < 0 || nz >= this.size) continue;
+        if (this.data[this.index(nx, ny, nz)] === 0) {
+          return [cx, cy, cz];
         }
       }
     }
     return [null, null, null];
-  }
-
-  create() {
-    let x = 2 * randomInt(this.size);
-    let y = 2 * randomInt(this.size);
-    let z = 2 * randomInt(this.size);
-    this.set(x, y, z, Maze.Path);
-
-    const stack = [];
-    while (x != null && y != null && z != null) {
-      while (x != null && y != null && z != null) {
-        stack.push([x, y, z]);
-        [x, y, z] = this.walk(x, y, z);
-      }
-      [x, y, z] = this.backtrack(stack);
-    }
   }
 }
