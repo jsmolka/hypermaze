@@ -48,25 +48,26 @@ class MazeGraphic extends Graphic {
     group.add(cubes);
 
     let count = 0;
+    const matrix = new Matrix4();
     const edgesPositions = Array.from({ length: 1 << 6 }, () => []);
     for (let x = 0; x < maze.size; x++) {
       for (let y = 0; y < maze.size; y++) {
         for (let z = 0; z < maze.size; z++) {
-          cubes.setMatrixAt(count++, new Matrix4().setPosition(2 * x, 2 * y, 2 * z));
+          cubes.setMatrixAt(count++, matrix.setPosition(2 * x, 2 * y, 2 * z));
 
           const neighbors = maze.data[maze.index(x, y, z)];
           edgesPositions[neighbors].push(2 * x, 2 * y, 2 * z);
 
           if (neighbors & Neighbor.px) {
-            cubes.setMatrixAt(count++, new Matrix4().setPosition(2 * x + 1, 2 * y, 2 * z));
+            cubes.setMatrixAt(count++, matrix.setPosition(2 * x + 1, 2 * y, 2 * z));
             edgesPositions[Neighbor.px | Neighbor.nx].push(2 * x + 1, 2 * y, 2 * z);
           }
           if (neighbors & Neighbor.py) {
-            cubes.setMatrixAt(count++, new Matrix4().setPosition(2 * x, 2 * y + 1, 2 * z));
+            cubes.setMatrixAt(count++, matrix.setPosition(2 * x, 2 * y + 1, 2 * z));
             edgesPositions[Neighbor.py | Neighbor.ny].push(2 * x, 2 * y + 1, 2 * z);
           }
           if (neighbors & Neighbor.pz) {
-            cubes.setMatrixAt(count++, new Matrix4().setPosition(2 * x, 2 * y, 2 * z + 1));
+            cubes.setMatrixAt(count++, matrix.setPosition(2 * x, 2 * y, 2 * z + 1));
             edgesPositions[Neighbor.pz | Neighbor.nz].push(2 * x, 2 * y, 2 * z + 1);
           }
         }
