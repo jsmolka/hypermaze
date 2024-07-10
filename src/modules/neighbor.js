@@ -1,4 +1,4 @@
-export const Neighbor = Object.freeze({
+export const neighbor = Object.freeze({
   px: 1 << 0,
   nx: 1 << 1,
   py: 1 << 2,

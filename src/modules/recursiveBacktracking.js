@@ -1,13 +1,5 @@
+import { neighbor } from '@/modules/neighbor';
 import { randomInt, shuffle } from '@/utils/random';
-
-const neighbor = Object.freeze({
-  px: 1 << 0,
-  nx: 1 << 1,
-  py: 1 << 2,
-  ny: 1 << 3,
-  pz: 1 << 4,
-  nz: 1 << 5,
-});
 
 const directions = [
   (x, y, z) => [x + 1, y, z, neighbor.px, neighbor.nx],

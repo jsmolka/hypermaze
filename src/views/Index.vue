@@ -7,8 +7,8 @@ import { CubeEdgesGeometry } from '@/graphic/cubeEdgesGeometry';
 import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
-import { Neighbor } from '@/graphic/neighbor';
 import { Maze } from '@/modules/maze';
+import { neighbor } from '@/modules/neighbor';
 import { RecursiveBacktracking } from '@/modules/recursiveBacktracking';
 import { colors } from '@/utils/colors';
 import { useResizeObserver } from '@vueuse/core';
@@ -64,17 +64,17 @@ class MazeGraphic extends Graphic {
 
           edgesPositions[neighbors].push(2 * x, 2 * y, 2 * z);
 
-          if (neighbors & Neighbor.px) {
+          if (neighbors & neighbor.px) {
             cubes.setMatrixAt(count++, matrix.setPosition(2 * x + 1, 2 * y, 2 * z));
-            edgesPositions[Neighbor.px | Neighbor.nx].push(2 * x + 1, 2 * y, 2 * z);
+            edgesPositions[neighbor.px | neighbor.nx].push(2 * x + 1, 2 * y, 2 * z);
           }
-          if (neighbors & Neighbor.py) {
+          if (neighbors & neighbor.py) {
             cubes.setMatrixAt(count++, matrix.setPosition(2 * x, 2 * y + 1, 2 * z));
-            edgesPositions[Neighbor.py | Neighbor.ny].push(2 * x, 2 * y + 1, 2 * z);
+            edgesPositions[neighbor.py | neighbor.ny].push(2 * x, 2 * y + 1, 2 * z);
           }
-          if (neighbors & Neighbor.pz) {
+          if (neighbors & neighbor.pz) {
             cubes.setMatrixAt(count++, matrix.setPosition(2 * x, 2 * y, 2 * z + 1));
-            edgesPositions[Neighbor.pz | Neighbor.nz].push(2 * x, 2 * y, 2 * z + 1);
+            edgesPositions[neighbor.pz | neighbor.nz].push(2 * x, 2 * y, 2 * z + 1);
           }
         }
       }

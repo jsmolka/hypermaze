@@ -1,4 +1,4 @@
-import { Neighbor } from '@/graphic/neighbor';
+import { neighbor } from '@/modules/neighbor';
 import { BufferGeometry, Float32BufferAttribute } from 'three';
 
 export class CubeEdgesGeometry extends BufferGeometry {
@@ -14,51 +14,51 @@ export class CubeEdgesGeometry extends BufferGeometry {
       return (neighborMask & mask) === 0 || (neighborMask & mask) === mask;
     };
 
-    if (hasEdge(Neighbor.px, Neighbor.py)) {
+    if (hasEdge(neighbor.px, neighbor.py)) {
       vertices.push(ps, ps, ns);
       vertices.push(ps, ps, ps);
     }
-    if (hasEdge(Neighbor.px, Neighbor.ny)) {
+    if (hasEdge(neighbor.px, neighbor.ny)) {
       vertices.push(ps, ns, ns);
       vertices.push(ps, ns, ps);
     }
-    if (hasEdge(Neighbor.px, Neighbor.pz)) {
+    if (hasEdge(neighbor.px, neighbor.pz)) {
       vertices.push(ps, ns, ps);
       vertices.push(ps, ps, ps);
     }
-    if (hasEdge(Neighbor.px, Neighbor.nz)) {
+    if (hasEdge(neighbor.px, neighbor.nz)) {
       vertices.push(ps, ns, ns);
       vertices.push(ps, ps, ns);
     }
-    if (hasEdge(Neighbor.nx, Neighbor.py)) {
+    if (hasEdge(neighbor.nx, neighbor.py)) {
       vertices.push(ns, ps, ns);
       vertices.push(ns, ps, ps);
     }
-    if (hasEdge(Neighbor.nx, Neighbor.ny)) {
+    if (hasEdge(neighbor.nx, neighbor.ny)) {
       vertices.push(ns, ns, ns);
       vertices.push(ns, ns, ps);
     }
-    if (hasEdge(Neighbor.nx, Neighbor.pz)) {
+    if (hasEdge(neighbor.nx, neighbor.pz)) {
       vertices.push(ns, ns, ps);
       vertices.push(ns, ps, ps);
     }
-    if (hasEdge(Neighbor.nx, Neighbor.nz)) {
+    if (hasEdge(neighbor.nx, neighbor.nz)) {
       vertices.push(ns, ns, ns);
       vertices.push(ns, ps, ns);
     }
-    if (hasEdge(Neighbor.py, Neighbor.pz)) {
+    if (hasEdge(neighbor.py, neighbor.pz)) {
       vertices.push(ns, ps, ps);
       vertices.push(ps, ps, ps);
     }
-    if (hasEdge(Neighbor.py, Neighbor.nz)) {
+    if (hasEdge(neighbor.py, neighbor.nz)) {
       vertices.push(ns, ps, ns);
       vertices.push(ps, ps, ns);
     }
-    if (hasEdge(Neighbor.ny, Neighbor.pz)) {
+    if (hasEdge(neighbor.ny, neighbor.pz)) {
       vertices.push(ns, ns, ps);
       vertices.push(ps, ns, ps);
     }
-    if (hasEdge(Neighbor.ny, Neighbor.nz)) {
+    if (hasEdge(neighbor.ny, neighbor.nz)) {
       vertices.push(ns, ns, ns);
       vertices.push(ps, ns, ns);
     }
