@@ -18,10 +18,9 @@ const directions = [
   (x, y, z) => [x, y, z - 1, neighbor.nz, neighbor.pz],
 ];
 
-export class Generator {
+export class RecursiveBacktracking {
   constructor(maze) {
     this.maze = maze;
-    this.done = false;
     this.x = randomInt(maze.size);
     this.y = randomInt(maze.size);
     this.z = randomInt(maze.size);
@@ -29,10 +28,6 @@ export class Generator {
   }
 
   step() {
-    if (this.done) {
-      return null;
-    }
-
     loop: while (true) {
       shuffle(directions);
       for (const direction of directions) {
@@ -40,15 +35,14 @@ export class Generator {
         if (x < 0 || x >= this.maze.size) continue;
         if (y < 0 || y >= this.maze.size) continue;
         if (z < 0 || z >= this.maze.size) continue;
-
-        const i = this.maze.index(x, y, z);
-        if (this.maze.data[i] === 0) {
-          this.maze.data[this.i] |= p;
-          this.maze.data[i] |= n;
+        const j = this.maze.index(x, y, z);
+        if (this.maze.data[j] === 0) {
+          const i = this.maze.index(this.x, this.y, this.z);
+          this.maze.data[i] |= p;
+          this.maze.data[j] |= n;
           this.x = x;
           this.y = y;
           this.z = z;
-          this.i = i;
 
           const coordinates = [x, y, z];
           this.stack.push(coordinates);
@@ -63,10 +57,8 @@ export class Generator {
           if (x < 0 || x >= this.maze.size) continue;
           if (y < 0 || y >= this.maze.size) continue;
           if (z < 0 || z >= this.maze.size) continue;
-
-          const i = this.maze.index(x, y, z);
-          if (this.maze.data[i] === 0) {
-            this.i = this.maze.index(this.x, this.y, this.z);
+          const j = this.maze.index(x, y, z);
+          if (this.maze.data[j] === 0) {
             continue loop;
           }
         }
@@ -76,7 +68,6 @@ export class Generator {
   }
 
   build() {
-    while (this.step());
-    this.done = true;
+    while (this.step() != null);
   }
 }

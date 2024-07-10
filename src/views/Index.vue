@@ -8,8 +8,8 @@ import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
 import { Neighbor } from '@/graphic/neighbor';
-import { Generator } from '@/modules/generator';
 import { Maze } from '@/modules/maze';
+import { RecursiveBacktracking } from '@/modules/recursiveBacktracking';
 import { colors } from '@/utils/colors';
 import { useResizeObserver } from '@vueuse/core';
 import {
@@ -29,7 +29,7 @@ const container = ref();
 const size = ref(25);
 
 const maze = new Maze(size.value);
-const gen = new Generator(maze);
+const gen = new RecursiveBacktracking(maze);
 
 class MazeGraphic extends Graphic {
   paint() {
