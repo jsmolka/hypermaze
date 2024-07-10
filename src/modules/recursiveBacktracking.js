@@ -28,10 +28,10 @@ export class RecursiveBacktracking {
         if (y < 0 || y >= this.maze.size) continue;
         if (z < 0 || z >= this.maze.size) continue;
         const j = this.maze.index(x, y, z);
-        if (this.maze.data[j] === 0) {
+        if (this.maze[j] === 0) {
           const i = this.maze.index(this.x, this.y, this.z);
-          this.maze.data[i] |= p;
-          this.maze.data[j] |= n;
+          this.maze[i] |= p;
+          this.maze[j] |= n;
           this.x = x;
           this.y = y;
           this.z = z;
@@ -50,7 +50,7 @@ export class RecursiveBacktracking {
           if (y < 0 || y >= this.maze.size) continue;
           if (z < 0 || z >= this.maze.size) continue;
           const j = this.maze.index(x, y, z);
-          if (this.maze.data[j] === 0) {
+          if (this.maze[j] === 0) {
             continue loop;
           }
         }

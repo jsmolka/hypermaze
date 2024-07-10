@@ -26,27 +26,26 @@ import {
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const container = ref();
-const size = ref(25);
+const size = ref(50);
 
 const maze = new Maze(size.value);
 const gen = new RecursiveBacktracking(maze);
+gen.build();
 
 class MazeGraphic extends Graphic {
   paint() {
     dispose(this.scene);
 
-    const dims = 2 * maze.size - 1;
-
     const group = new Group();
-    group.translateX(-dims / 2 + 1 / 2);
-    group.translateY(-dims / 2 + 1 / 2);
-    group.translateZ(-dims / 2 + 1 / 2);
+    group.translateX(-maze.elementDims / 2 + 1 / 2);
+    group.translateY(-maze.elementDims / 2 + 1 / 2);
+    group.translateZ(-maze.elementDims / 2 + 1 / 2);
     this.scene.add(group);
 
     const cubes = new InstancedMesh(
       new CubeGeometry(),
       new MeshBasicMaterial({ color: colors.brand3.int }),
-      dims ** 3,
+      maze.elements,
     );
     group.add(cubes);
 
@@ -56,7 +55,7 @@ class MazeGraphic extends Graphic {
     for (let x = 0; x < maze.size; x++) {
       for (let y = 0; y < maze.size; y++) {
         for (let z = 0; z < maze.size; z++) {
-          const neighbors = maze.data[maze.index(x, y, z)];
+          const neighbors = maze[maze.index(x, y, z)];
           if (neighbors === 0) {
             continue;
           }
@@ -79,7 +78,6 @@ class MazeGraphic extends Graphic {
         }
       }
     }
-    cubes.count = count;
 
     // Edges
     const edgesMaterial = new LineBasicMaterial({
@@ -116,7 +114,7 @@ class MazeGraphic extends Graphic {
 
     // Bounding box
     const bbox = new Mesh(
-      new CubeGeometry(2 * maze.size - 1),
+      new CubeGeometry(maze.elementDims),
       new MeshBasicMaterial({ opacity: 0, transparent: true }),
     );
     this.scene.add(bbox);
@@ -132,13 +130,6 @@ onMounted(() => {
   graphic.paint();
   graphic.fitAndCenter();
   graphic.render();
-
-  const build = () => {
-    gen.step();
-    graphic.paint();
-    requestAnimationFrame(build);
-  };
-  build();
 
   useResizeObserver(container, ([entry]) => {
     graphic.resize(entry.contentRect);
