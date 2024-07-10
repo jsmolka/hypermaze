@@ -8,6 +8,7 @@ import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
 import { Neighbor } from '@/graphic/neighbor';
+import { Generator } from '@/modules/generator';
 import { Maze } from '@/modules/maze';
 import { colors } from '@/utils/colors';
 import { useResizeObserver } from '@vueuse/core';
@@ -25,13 +26,15 @@ import {
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const container = ref();
-const size = ref(50);
+const size = ref(25);
+
+const maze = new Maze(size.value);
+const gen = new Generator(maze);
 
 class MazeGraphic extends Graphic {
   paint() {
     dispose(this.scene);
 
-    const maze = new Maze(size.value);
     const dims = 2 * maze.size - 1;
 
     const group = new Group();
@@ -53,9 +56,12 @@ class MazeGraphic extends Graphic {
     for (let x = 0; x < maze.size; x++) {
       for (let y = 0; y < maze.size; y++) {
         for (let z = 0; z < maze.size; z++) {
+          const neighbors = maze.data[maze.index(x, y, z)];
+          if (neighbors === 0) {
+            continue;
+          }
           cubes.setMatrixAt(count++, matrix.setPosition(2 * x, 2 * y, 2 * z));
 
-          const neighbors = maze.data[maze.index(x, y, z)];
           edgesPositions[neighbors].push(2 * x, 2 * y, 2 * z);
 
           if (neighbors & Neighbor.px) {
@@ -126,6 +132,13 @@ onMounted(() => {
   graphic.paint();
   graphic.fitAndCenter();
   graphic.render();
+
+  const build = () => {
+    gen.step();
+    graphic.paint();
+    requestAnimationFrame(build);
+  };
+  build();
 
   useResizeObserver(container, ([entry]) => {
     graphic.resize(entry.contentRect);
