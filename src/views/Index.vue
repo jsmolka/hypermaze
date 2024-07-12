@@ -14,11 +14,11 @@ import { neighbor } from '@/modules/neighbor';
 import { RecursiveBacktracking } from '@/modules/recursiveBacktracking';
 import { colors } from '@/utils/colors';
 import { useResizeObserver } from '@vueuse/core';
-import { Group, InstancedBufferAttribute, LineBasicMaterial, Mesh, MeshBasicMaterial } from 'three';
+import { Group, LineBasicMaterial, Mesh, MeshBasicMaterial } from 'three';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const container = ref();
-const size = ref(50);
+const size = ref(2);
 
 const maze = new Maze(size.value);
 const gen = new RecursiveBacktracking(maze);
@@ -73,19 +73,19 @@ class MazeGraphic extends Graphic {
           const cz = 2 * z;
 
           this.cubes.setPositionAt(count++, cx, cy, cz);
-          edgesPositions[neighbors].push(cx, cy, cz);
+          edgesPositions[neighbors].push([cx, cy, cz]);
 
           if (neighbors & neighbor.px) {
             this.cubes.setPositionAt(count++, cx + 1, cy, cz);
-            edgesPositions[xAxis].push(cx + 1, cy, cz);
+            edgesPositions[xAxis].push([cx + 1, cy, cz]);
           }
           if (neighbors & neighbor.py) {
             this.cubes.setPositionAt(count++, cx, cy + 1, cz);
-            edgesPositions[yAxis].push(cx, cy + 1, cz);
+            edgesPositions[yAxis].push([cx, cy + 1, cz]);
           }
           if (neighbors & neighbor.pz) {
             this.cubes.setPositionAt(count++, cx, cy, cz + 1);
-            edgesPositions[zAxis].push(cx, cy, cz + 1);
+            edgesPositions[zAxis].push([cx, cy, cz + 1]);
           }
         }
       }
@@ -100,14 +100,13 @@ class MazeGraphic extends Graphic {
 
       const edges = new InstancedLineSegments(
         new CubeEdgesGeometry(neighborMask),
-        new LineBasicMaterial({ color: colors.shade8.int }),
+        new LineBasicMaterial({ color: 'yellow' }),
+        positions.length,
       );
       edges.frustumCulled = false;
-      edges.count = positions.length;
-      edges.geometry.setAttribute(
-        'offset',
-        new InstancedBufferAttribute(new Float32Array(positions), 3),
-      );
+      for (const [i, [x, y, z]] of positions.entries()) {
+        edges.setPositionAt(i, x, y, z);
+      }
       this.group.add(edges);
     }
 
