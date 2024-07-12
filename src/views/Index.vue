@@ -7,21 +7,14 @@ import { CubeEdgesGeometry } from '@/graphic/cubeEdgesGeometry';
 import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
-import { InstancedLineBasicMaterial } from '@/graphic/instancedLineBasicMaterial';
+import { InstancedLineSegments } from '@/graphic/instancedLineSegments';
 import { InstancedMesh } from '@/graphic/instancedMesh';
 import { Maze } from '@/modules/maze';
 import { neighbor } from '@/modules/neighbor';
 import { RecursiveBacktracking } from '@/modules/recursiveBacktracking';
 import { colors } from '@/utils/colors';
 import { useResizeObserver } from '@vueuse/core';
-import {
-  Group,
-  InstancedBufferAttribute,
-  InstancedBufferGeometry,
-  LineSegments,
-  Mesh,
-  MeshBasicMaterial,
-} from 'three';
+import { Group, InstancedBufferAttribute, LineBasicMaterial, Mesh, MeshBasicMaterial } from 'three';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const container = ref();
@@ -105,20 +98,16 @@ class MazeGraphic extends Graphic {
         continue;
       }
 
-      const edgesMaterial = new InstancedLineBasicMaterial({
-        color: colors.shade8.int,
-      });
-
-      const edgesGeometry = new CubeEdgesGeometry(neighborMask);
-      const instancedEdgesGeometry = new InstancedBufferGeometry().copy(edgesGeometry);
-      instancedEdgesGeometry.instanceCount = positions.length;
-      instancedEdgesGeometry.setAttribute(
+      const edges = new InstancedLineSegments(
+        new CubeEdgesGeometry(neighborMask),
+        new LineBasicMaterial({ color: colors.shade8.int }),
+      );
+      edges.frustumCulled = false;
+      edges.count = positions.length;
+      edges.geometry.setAttribute(
         'offset',
         new InstancedBufferAttribute(new Float32Array(positions), 3),
       );
-
-      const edges = new LineSegments(instancedEdgesGeometry, edgesMaterial);
-      edges.frustumCulled = false;
       this.group.add(edges);
     }
 
