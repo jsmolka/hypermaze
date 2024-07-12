@@ -5,10 +5,14 @@ export class Maze extends Uint8Array {
   }
 
   get elements() {
-    return 2 * this.length - 1;
+    return this.length;
   }
 
-  get elementDims() {
+  get connectors() {
+    return this.length - 1;
+  }
+
+  get dimensions() {
     return 2 * this.size - 1;
   }
 

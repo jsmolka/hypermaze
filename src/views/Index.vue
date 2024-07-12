@@ -41,20 +41,20 @@ class MazeGraphic extends Graphic {
     dispose(this.scene);
 
     this.group = new Group();
-    this.group.translateX(-maze.elementDims / 2 + 1 / 2);
-    this.group.translateY(-maze.elementDims / 2 + 1 / 2);
-    this.group.translateZ(-maze.elementDims / 2 + 1 / 2);
+    this.group.translateX(-maze.dimensions / 2 + 1 / 2);
+    this.group.translateY(-maze.dimensions / 2 + 1 / 2);
+    this.group.translateZ(-maze.dimensions / 2 + 1 / 2);
     this.scene.add(this.group);
 
     this.cubes = new InstancedMesh(
       new CubeGeometry(),
       new MeshBasicMaterial({ color: colors.brand3.int }),
-      maze.elements,
+      maze.elements + maze.connectors,
     );
     this.group.add(this.cubes);
 
     const bbox = new Mesh(
-      new CubeGeometry(maze.elementDims),
+      new CubeGeometry(maze.dimensions),
       new MeshBasicMaterial({ opacity: 0, transparent: true }),
     );
     this.scene.add(bbox);
