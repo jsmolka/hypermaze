@@ -18,11 +18,10 @@ import { Group, LineBasicMaterial, Mesh, MeshBasicMaterial } from 'three';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const container = ref();
-const size = ref(2);
+const size = ref(50);
 
 const maze = new Maze(size.value);
-const gen = new RecursiveBacktracking(maze);
-gen.build();
+new RecursiveBacktracking(maze).build();
 
 class MazeGraphic extends Graphic {
   constructor(container, options = {}) {
@@ -53,17 +52,18 @@ class MazeGraphic extends Graphic {
     this.scene.add(bbox);
   }
 
-  renderMaze() {
+  paintAll() {
     const xAxis = neighbor.px | neighbor.nx;
     const yAxis = neighbor.py | neighbor.ny;
     const zAxis = neighbor.pz | neighbor.nz;
-
-    let count = 0;
     const edgesPositions = Array.from(Array(1 << 6), () => []);
+
+    let i = 0;
+    let c = 0;
     for (let z = 0; z < maze.size; z++) {
       for (let y = 0; y < maze.size; y++) {
         for (let x = 0; x < maze.size; x++) {
-          const neighbors = maze[maze.index(x, y, z)];
+          const neighbors = maze[i++];
           if (neighbors === 0) {
             continue;
           }
@@ -72,25 +72,24 @@ class MazeGraphic extends Graphic {
           const cy = 2 * y;
           const cz = 2 * z;
 
-          this.cubes.setPositionAt(count++, cx, cy, cz);
+          this.cubes.setPositionAt(c++, cx, cy, cz);
           edgesPositions[neighbors].push([cx, cy, cz]);
 
           if (neighbors & neighbor.px) {
-            this.cubes.setPositionAt(count++, cx + 1, cy, cz);
+            this.cubes.setPositionAt(c++, cx + 1, cy, cz);
             edgesPositions[xAxis].push([cx + 1, cy, cz]);
           }
           if (neighbors & neighbor.py) {
-            this.cubes.setPositionAt(count++, cx, cy + 1, cz);
+            this.cubes.setPositionAt(c++, cx, cy + 1, cz);
             edgesPositions[yAxis].push([cx, cy + 1, cz]);
           }
           if (neighbors & neighbor.pz) {
-            this.cubes.setPositionAt(count++, cx, cy, cz + 1);
+            this.cubes.setPositionAt(c++, cx, cy, cz + 1);
             edgesPositions[zAxis].push([cx, cy, cz + 1]);
           }
         }
       }
     }
-    this.cubes.count = count;
 
     // Edges
     for (const [neighborMask, positions] of edgesPositions.entries()) {
@@ -118,7 +117,7 @@ let graphic = null;
 
 onMounted(() => {
   graphic = new MazeGraphic(container.value);
-  graphic.renderMaze();
+  graphic.paintAll();
   graphic.fitAndCenter();
 
   useResizeObserver(container, ([entry]) => {
