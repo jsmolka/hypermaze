@@ -7,6 +7,8 @@ import { CubeEdgesGeometry } from '@/graphic/cubeEdgesGeometry';
 import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
+import { InstancedLineBasicMaterial } from '@/graphic/instancedLineBasicMaterial';
+import { InstancedMesh } from '@/graphic/instancedMesh';
 import { Maze } from '@/modules/maze';
 import { neighbor } from '@/modules/neighbor';
 import { RecursiveBacktracking } from '@/modules/recursiveBacktracking';
@@ -16,10 +18,7 @@ import {
   Group,
   InstancedBufferAttribute,
   InstancedBufferGeometry,
-  InstancedMesh,
-  LineBasicMaterial,
   LineSegments,
-  Matrix4,
   Mesh,
   MeshBasicMaterial,
 } from 'three';
@@ -33,71 +32,82 @@ const gen = new RecursiveBacktracking(maze);
 gen.build();
 
 class MazeGraphic extends Graphic {
-  paint() {
+  constructor(container, options = {}) {
+    super(container, options);
+    this.setup();
+  }
+
+  setup() {
     dispose(this.scene);
 
-    const group = new Group();
-    group.translateX(-maze.elementDims / 2 + 1 / 2);
-    group.translateY(-maze.elementDims / 2 + 1 / 2);
-    group.translateZ(-maze.elementDims / 2 + 1 / 2);
-    this.scene.add(group);
+    this.group = new Group();
+    this.group.translateX(-maze.elementDims / 2 + 1 / 2);
+    this.group.translateY(-maze.elementDims / 2 + 1 / 2);
+    this.group.translateZ(-maze.elementDims / 2 + 1 / 2);
+    this.scene.add(this.group);
 
-    const cubes = new InstancedMesh(
+    this.cubes = new InstancedMesh(
       new CubeGeometry(),
       new MeshBasicMaterial({ color: colors.brand3.int }),
       maze.elements,
     );
-    group.add(cubes);
+    this.group.add(this.cubes);
+
+    const bbox = new Mesh(
+      new CubeGeometry(maze.elementDims),
+      new MeshBasicMaterial({ opacity: 0, transparent: true }),
+    );
+    this.scene.add(bbox);
+  }
+
+  renderMaze() {
+    const xAxis = neighbor.px | neighbor.nx;
+    const yAxis = neighbor.py | neighbor.ny;
+    const zAxis = neighbor.pz | neighbor.nz;
 
     let count = 0;
-    const matrix = new Matrix4();
-    const edgesPositions = Array.from({ length: 1 << 6 }, () => []);
-    for (let x = 0; x < maze.size; x++) {
+    const edgesPositions = Array.from(Array(1 << 6), () => []);
+    for (let z = 0; z < maze.size; z++) {
       for (let y = 0; y < maze.size; y++) {
-        for (let z = 0; z < maze.size; z++) {
+        for (let x = 0; x < maze.size; x++) {
           const neighbors = maze[maze.index(x, y, z)];
           if (neighbors === 0) {
             continue;
           }
-          cubes.setMatrixAt(count++, matrix.setPosition(2 * x, 2 * y, 2 * z));
 
-          edgesPositions[neighbors].push(2 * x, 2 * y, 2 * z);
+          const cx = 2 * x;
+          const cy = 2 * y;
+          const cz = 2 * z;
+
+          this.cubes.setPositionAt(count++, cx, cy, cz);
+          edgesPositions[neighbors].push(cx, cy, cz);
 
           if (neighbors & neighbor.px) {
-            cubes.setMatrixAt(count++, matrix.setPosition(2 * x + 1, 2 * y, 2 * z));
-            edgesPositions[neighbor.px | neighbor.nx].push(2 * x + 1, 2 * y, 2 * z);
+            this.cubes.setPositionAt(count++, cx + 1, cy, cz);
+            edgesPositions[xAxis].push(cx + 1, cy, cz);
           }
           if (neighbors & neighbor.py) {
-            cubes.setMatrixAt(count++, matrix.setPosition(2 * x, 2 * y + 1, 2 * z));
-            edgesPositions[neighbor.py | neighbor.ny].push(2 * x, 2 * y + 1, 2 * z);
+            this.cubes.setPositionAt(count++, cx, cy + 1, cz);
+            edgesPositions[yAxis].push(cx, cy + 1, cz);
           }
           if (neighbors & neighbor.pz) {
-            cubes.setMatrixAt(count++, matrix.setPosition(2 * x, 2 * y, 2 * z + 1));
-            edgesPositions[neighbor.pz | neighbor.nz].push(2 * x, 2 * y, 2 * z + 1);
+            this.cubes.setPositionAt(count++, cx, cy, cz + 1);
+            edgesPositions[zAxis].push(cx, cy, cz + 1);
           }
         }
       }
     }
+    this.cubes.count = count;
 
     // Edges
-    const edgesMaterial = new LineBasicMaterial({
-      color: colors.shade8.int,
-      onBeforeCompile: (shader) => {
-        shader.vertexShader = `
-    	    attribute vec3 offset;
-          ${shader.vertexShader}
-        `.replace(
-          `#include <begin_vertex>`,
-          `#include <begin_vertex>
-           transformed += offset;`,
-        );
-      },
-    });
-
     for (const [neighborMask, positions] of edgesPositions.entries()) {
       if (positions.length === 0) {
         continue;
       }
+
+      const edgesMaterial = new InstancedLineBasicMaterial({
+        color: colors.shade8.int,
+      });
 
       const edgesGeometry = new CubeEdgesGeometry(neighborMask);
       const instancedEdgesGeometry = new InstancedBufferGeometry().copy(edgesGeometry);
@@ -109,15 +119,8 @@ class MazeGraphic extends Graphic {
 
       const edges = new LineSegments(instancedEdgesGeometry, edgesMaterial);
       edges.frustumCulled = false;
-      group.add(edges);
+      this.group.add(edges);
     }
-
-    // Bounding box
-    const bbox = new Mesh(
-      new CubeGeometry(maze.elementDims),
-      new MeshBasicMaterial({ opacity: 0, transparent: true }),
-    );
-    this.scene.add(bbox);
 
     this.render();
   }
@@ -127,9 +130,8 @@ let graphic = null;
 
 onMounted(() => {
   graphic = new MazeGraphic(container.value);
-  graphic.paint();
+  graphic.renderMaze();
   graphic.fitAndCenter();
-  graphic.render();
 
   useResizeObserver(container, ([entry]) => {
     graphic.resize(entry.contentRect);

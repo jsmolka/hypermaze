@@ -86,6 +86,7 @@ export class Graphic {
 
   forceRender() {
     this.renderer.render(this.scene, this.camera);
+    console.log(this.renderer.info.render.calls);
   }
 
   resize(rect = null) {
