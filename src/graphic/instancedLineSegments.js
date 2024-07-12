@@ -3,52 +3,38 @@ import {
   InstancedBufferGeometry,
   LineSegments,
   Matrix4,
-  Object3D,
   Quaternion,
   Vector3,
 } from 'three';
 
-const positionMatrix = new Matrix4();
+const matrix4 = new Matrix4();
 
 export class InstancedLineSegments extends LineSegments {
   constructor(geometry, material, count) {
-    const instancedGeometry = new InstancedBufferGeometry().copy(geometry);
-    instancedGeometry.instanceCount = Infinity;
-    instancedGeometry.setAttribute(
-      'instT',
-      new InstancedBufferAttribute(new Float32Array(3 * count), 3),
-    );
-    instancedGeometry.setAttribute(
-      'instR',
-      new InstancedBufferAttribute(new Float32Array(4 * count), 4),
-    );
-    instancedGeometry.setAttribute(
-      'instS',
-      new InstancedBufferAttribute(new Float32Array(3 * count), 3),
+    super(new InstancedBufferGeometry().copy(geometry), material);
+
+    this.geometry.instanceCount = count;
+    this.geometry.setAttribute(
+      'transformMatrix',
+      new InstancedBufferAttribute(new Float32Array(16 * count), 16),
     );
 
-    material.onBeforeCompile = (shader) => {
+    this.material.onBeforeCompile = function (shader) {
       shader.vertexShader = `
-      attribute vec3 instT;
-      attribute vec4 instR;
-      attribute vec3 instS;
-
-      // http://barradeau.com/blog/?p=1109
-      vec3 trs( inout vec3 position, vec3 T, vec4 R, vec3 S ) {
-          position *= S;
-          position += 2.0 * cross( R.xyz, cross( R.xyz, position ) + R.w * position );
-          position += T;
-          return position;
-      }
-      ${shader.vertexShader}
-  `.replace(
+        attribute mat4 transformMatrix;
+        ${shader.vertexShader}
+      `.replace(
         `#include <begin_vertex>`,
         `#include <begin_vertex>
-        transformed = trs(transformed, instT, instR, instS);
-  `,
+         transformed = (transformMatrix * vec4(transformed, 1.0)).xyz;
+      `,
       );
     };
-    super(instancedGeometry, material);
+
+    const identity = new Matrix4();
+    for (let i = 0; i < count; i++) {
+      this.setMatrixAt(i, identity);
+    }
   }
 
   get count() {
@@ -59,20 +45,42 @@ export class InstancedLineSegments extends LineSegments {
     this.geometry.instanceCount = value;
   }
 
+  getMatrixAt(index, matrix = new Matrix4()) {
+    return matrix.fromArray(this.geometry.attributes.transformMatrix.array, 16 * index);
+  }
+
+  setMatrixAt(index, matrix) {
+    matrix.toArray(this.geometry.attributes.transformMatrix.array, 16 * index);
+  }
+
+  getPositionAt(index, position = new Vector3()) {
+    return position.setFromMatrixPosition(this.getMatrixAt(index, matrix4));
+  }
+
   setPositionAt(index, x, y, z) {
-    const o = new Object3D();
-    o.translateX(x);
-    o.translateY(y);
-    o.translateZ(z);
-    o.updateMatrix();
+    this.setMatrixAt(index, this.getMatrixAt(index, matrix4).setPosition(x, y, z));
+  }
 
-    const t = new Vector3();
-    const r = new Quaternion();
-    const s = new Vector3();
-    o.matrix.decompose(t, r, s);
+  getScaleAt(index, scale = new Vector3()) {
+    return scale.setFromMatrixScale(this.getMatrixAt(index, matrix4));
+  }
 
-    this.geometry.attributes.instT.setXYZ(index, t.x, t.y, t.z);
-    this.geometry.attributes.instR.setXYZW(index, r.x, r.y, r.z, r.w);
-    this.geometry.attributes.instS.setXYZ(index, s.x, s.y, s.z);
+  setScaleAt(index, x, y, z) {
+    if (x instanceof Vector3) {
+      const v = x;
+      x = v.x;
+      y = v.y;
+      z = v.z;
+    }
+    this.setMatrixAt(index, this.getMatrixAt(index, matrix4).makeScale(x, y, z));
+  }
+
+  getRotationAt(index, quaternion = new Quaternion()) {
+    return quaternion.setFromRotationMatrix(this.getMatrixAt(index, matrix4));
+  }
+
+  setRotationAt(index, x, y, z, w) {
+    const q = x instanceof Quaternion ? x : new Quaternion(x, y, z, w);
+    this.setMatrixAt(index, this.getMatrixAt(index, matrix4).makeRotationFromQuaternion(q));
   }
 }

@@ -100,7 +100,7 @@ class MazeGraphic extends Graphic {
 
       const edges = new InstancedLineSegments(
         new CubeEdgesGeometry(neighborMask),
-        new LineBasicMaterial({ color: 'yellow' }),
+        new LineBasicMaterial({ color: colors.shade8.int }),
         positions.length,
       );
       edges.frustumCulled = false;
