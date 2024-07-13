@@ -28,6 +28,7 @@
     "camera-controls": "^2.8.5",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "idb-keyval": "^6.2.1",
     "lodash": "^4.17.21",
     "notyf": "^3.10.0",
     "pinia": "^2.1.7",

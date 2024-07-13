@@ -1,12 +1,17 @@
 import App from '@/App.vue';
 import '@/main.scss';
 import { router } from '@/router';
+import { useSettingsStore } from '@/stores/store';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 
-function main() {
+async function main() {
   const app = createApp(App);
   app.use(createPinia());
+
+  const store = useSettingsStore();
+  await store.hydrate();
+
   app.use(router);
   app.mount('#app');
 }
