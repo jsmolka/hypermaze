@@ -1,8 +1,17 @@
 <template>
+  <Form class="fixed top-4 left-4 p-3 bg-shade-8 border rounded-sm">
+    <FormItem>
+      <Label>Size</Label>
+      <InputNumber v-model="settings.size" :min="1" :max="1000" />
+    </FormItem>
+  </Form>
   <div ref="container" class="h-full" />
 </template>
 
 <script setup>
+import { Form, FormItem } from '@/components/ui/form';
+import { InputNumber } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { CubeEdgesGeometry } from '@/graphic/cubeEdgesGeometry';
 import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
@@ -12,15 +21,18 @@ import { InstancedMesh } from '@/graphic/instancedMesh';
 import { Maze } from '@/modules/maze';
 import { neighbor } from '@/modules/neighbor';
 import { RecursiveBacktracking } from '@/modules/recursiveBacktracking';
+import { useSettingsStore } from '@/stores/store';
 import { colors } from '@/utils/colors';
 import { useResizeObserver } from '@vueuse/core';
+import { storeToRefs } from 'pinia';
 import { Group, LineBasicMaterial, Mesh, MeshBasicMaterial } from 'three';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+
+const { settings } = storeToRefs(useSettingsStore());
 
 const container = ref();
-const size = ref(50);
 
-const maze = new Maze(size.value);
+let maze = new Maze(settings.value.size);
 new RecursiveBacktracking(maze).build();
 
 class MazeGraphic extends Graphic {
@@ -123,6 +135,17 @@ onMounted(() => {
   useResizeObserver(container, ([entry]) => {
     graphic.resize(entry.contentRect);
   });
+
+  watch(
+    () => settings.value.size,
+    () => {
+      maze = new Maze(settings.value.size);
+      new RecursiveBacktracking(maze).build();
+      graphic.setup();
+      graphic.paintAll();
+      graphic.fitAndCenter();
+    },
+  );
 });
 
 onBeforeUnmount(() => {
