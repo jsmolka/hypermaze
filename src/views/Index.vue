@@ -21,7 +21,7 @@ import { InstancedMesh } from '@/graphic/instancedMesh';
 import { Maze } from '@/modules/maze';
 import { neighbor } from '@/modules/neighbor';
 import { RecursiveBacktracking } from '@/modules/recursiveBacktracking';
-import { useSettingsStore } from '@/stores/store';
+import { useSettingsStore } from '@/stores/settings';
 import { colors } from '@/utils/colors';
 import { useResizeObserver } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
