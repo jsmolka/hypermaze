@@ -1,5 +1,13 @@
 <template>
   <Form class="fixed top-4 left-4 p-3 bg-shade-8 border rounded-sm">
+    <Button
+      variant="secondary"
+      @click="
+        graphic.resetCamera();
+        graphic.fitAndCenter();
+      "
+      >Reset camera</Button
+    >
     <FormItem>
       <Label>Size</Label>
       <InputNumber v-model="settings.size" :min="1" :max="1000" />
@@ -9,6 +17,7 @@
 </template>
 
 <script setup>
+import { Button } from '@/components/ui/button';
 import { Form, FormItem } from '@/components/ui/form';
 import { InputNumber } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
