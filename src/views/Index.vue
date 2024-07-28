@@ -12,6 +12,10 @@
       <Label>Size</Label>
       <InputNumber v-model="settings.size" :min="1" :max="1000" />
     </FormItem>
+    <FormItem>
+      <Label>Animate</Label>
+      <Switch v-model="settings.animate" />
+    </FormItem>
   </Form>
   <div ref="container" class="h-full" />
 </template>
@@ -21,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormItem } from '@/components/ui/form';
 import { InputNumber } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { CubeEdgesGeometry } from '@/graphic/cubeEdgesGeometry';
 import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
@@ -41,8 +46,18 @@ const { settings } = storeToRefs(useSettingsStore());
 
 const container = ref();
 
-let maze = new Maze(settings.value.size);
-new RecursiveBacktracking(maze).build();
+let maze = null;
+const initMaze = () => {
+  maze = new Maze(settings.value.size);
+};
+
+let generator = null;
+const initGenerator = () => {
+  generator = new RecursiveBacktracking(maze);
+  if (!settings.value.animate) {
+    generator.build();
+  }
+};
 
 class MazeGraphic extends Graphic {
   constructor(container, options = {}) {
@@ -111,6 +126,7 @@ class MazeGraphic extends Graphic {
         }
       }
     }
+    this.cubes.count = c;
 
     // Edges
     for (const [neighborMask, positions] of edgesPositions.entries()) {
@@ -135,8 +151,12 @@ class MazeGraphic extends Graphic {
 }
 
 let graphic = null;
+let stepRaf = null;
 
 onMounted(() => {
+  initMaze();
+  initGenerator();
+
   graphic = new MazeGraphic(container.value);
   graphic.paintAll();
   graphic.fitAndCenter();
@@ -148,16 +168,42 @@ onMounted(() => {
   watch(
     () => settings.value.size,
     () => {
-      maze = new Maze(settings.value.size);
-      new RecursiveBacktracking(maze).build();
+      initMaze();
+      initGenerator();
+
       graphic.setup();
       graphic.paintAll();
       graphic.fitAndCenter();
     },
   );
+
+  watch(
+    () => settings.value.animate,
+    () => {
+      initMaze();
+      initGenerator();
+
+      graphic.setup();
+      graphic.paintAll();
+      graphic.fitAndCenter();
+    },
+  );
+
+  const step = () => {
+    if (settings.value.animate) {
+      generator.step();
+
+      graphic.setup();
+      graphic.paintAll();
+    }
+    stepRaf = window.requestAnimationFrame(step);
+  };
+  stepRaf = window.requestAnimationFrame(step);
 });
 
 onBeforeUnmount(() => {
+  window.cancelAnimationFrame(stepRaf);
+
   graphic.dispose();
   graphic = null;
 });
