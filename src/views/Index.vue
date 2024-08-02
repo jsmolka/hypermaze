@@ -30,7 +30,6 @@ import { CubeEdgesGeometry } from '@/graphic/cubeEdgesGeometry';
 import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
-import { InstancedLineSegments } from '@/graphic/instancedLineSegments';
 import { InstancedMesh } from '@/graphic/instancedMesh';
 import { Maze } from '@/modules/maze';
 import { neighbor } from '@/modules/neighbor';
@@ -39,7 +38,15 @@ import { useSettingsStore } from '@/stores/settings';
 import { colors } from '@/utils/colors';
 import { useResizeObserver } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
-import { Group, LineBasicMaterial, Mesh, MeshBasicMaterial } from 'three';
+import {
+  Group,
+  InstancedBufferAttribute,
+  InstancedBufferGeometry,
+  LineBasicMaterial,
+  LineSegments,
+  Mesh,
+  MeshBasicMaterial,
+} from 'three';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const { settings } = storeToRefs(useSettingsStore());
@@ -81,6 +88,9 @@ class MazeGraphic extends Graphic {
     );
     this.group.add(this.cubes);
 
+    this.edges = new Group();
+    this.group.add(this.edges);
+
     const bbox = new Mesh(
       new CubeGeometry(maze.dimensions),
       new MeshBasicMaterial({ opacity: 0, transparent: true }),
@@ -88,14 +98,17 @@ class MazeGraphic extends Graphic {
     this.scene.add(bbox);
   }
 
-  paintAll() {
+  paint() {
+    console.time('paint');
+
     const xAxis = neighbor.px | neighbor.nx;
     const yAxis = neighbor.py | neighbor.ny;
     const zAxis = neighbor.pz | neighbor.nz;
+
     const edgesPositions = Array.from(Array(1 << 6), () => []);
 
     let i = 0;
-    let c = 0;
+    let count = 0;
     for (let z = 0; z < maze.size; z++) {
       for (let y = 0; y < maze.size; y++) {
         for (let x = 0; x < maze.size; x++) {
@@ -108,45 +121,80 @@ class MazeGraphic extends Graphic {
           const cy = 2 * y;
           const cz = 2 * z;
 
-          this.cubes.setPositionAt(c++, cx, cy, cz);
-          edgesPositions[neighbors].push([cx, cy, cz]);
+          const matrixIndex = 16 * count++;
+          this.cubes.instanceMatrix.array[matrixIndex + 12] = cx;
+          this.cubes.instanceMatrix.array[matrixIndex + 13] = cy;
+          this.cubes.instanceMatrix.array[matrixIndex + 14] = cz;
+
+          edgesPositions[neighbors].push(cx, cy, cz);
 
           if (neighbors & neighbor.px) {
-            this.cubes.setPositionAt(c++, cx + 1, cy, cz);
-            edgesPositions[xAxis].push([cx + 1, cy, cz]);
+            const matrixIndex = 16 * count++;
+            this.cubes.instanceMatrix.array[matrixIndex + 12] = cx + 1;
+            this.cubes.instanceMatrix.array[matrixIndex + 13] = cy;
+            this.cubes.instanceMatrix.array[matrixIndex + 14] = cz;
+
+            edgesPositions[xAxis].push(cx + 1, cy, cz);
           }
           if (neighbors & neighbor.py) {
-            this.cubes.setPositionAt(c++, cx, cy + 1, cz);
-            edgesPositions[yAxis].push([cx, cy + 1, cz]);
+            const matrixIndex = 16 * count++;
+            this.cubes.instanceMatrix.array[matrixIndex + 12] = cx;
+            this.cubes.instanceMatrix.array[matrixIndex + 13] = cy + 1;
+            this.cubes.instanceMatrix.array[matrixIndex + 14] = cz;
+
+            edgesPositions[yAxis].push(cx, cy + 1, cz);
           }
           if (neighbors & neighbor.pz) {
-            this.cubes.setPositionAt(c++, cx, cy, cz + 1);
-            edgesPositions[zAxis].push([cx, cy, cz + 1]);
+            const matrixIndex = 16 * count++;
+            this.cubes.instanceMatrix.array[matrixIndex + 12] = cx;
+            this.cubes.instanceMatrix.array[matrixIndex + 13] = cy;
+            this.cubes.instanceMatrix.array[matrixIndex + 14] = cz + 1;
+
+            edgesPositions[zAxis].push(cx, cy, cz + 1);
           }
         }
       }
     }
-    this.cubes.count = c;
+    this.cubes.count = count;
+    this.cubes.instanceMatrix.needsUpdate = true;
 
-    // Edges
+    dispose(this.edges);
+
     for (const [neighborMask, positions] of edgesPositions.entries()) {
       if (positions.length === 0) {
         continue;
       }
 
-      const edges = new InstancedLineSegments(
-        new CubeEdgesGeometry(neighborMask),
-        new LineBasicMaterial({ color: colors.shade8.int }),
-        positions.length,
+      const edgesGeometry = new InstancedBufferGeometry().copy(new CubeEdgesGeometry(neighborMask));
+      edgesGeometry.instanceCount = positions.length / 3;
+      edgesGeometry.setAttribute(
+        'offset',
+        new InstancedBufferAttribute(new Float32Array(positions), 3),
       );
+
+      const edgesMaterial = new LineBasicMaterial({
+        color: colors.shade8.int,
+        onBeforeCompile: function (shader) {
+          shader.vertexShader = `
+            attribute vec3 offset;
+            ${shader.vertexShader}
+          `.replace(
+            `#include <begin_vertex>`,
+            `#include <begin_vertex>
+             transformed += offset;
+          `,
+          );
+        },
+      });
+
+      const edges = new LineSegments(edgesGeometry, edgesMaterial);
       edges.frustumCulled = false;
-      for (const [i, [x, y, z]] of positions.entries()) {
-        edges.setPositionAt(i, x, y, z);
-      }
-      this.group.add(edges);
+      this.edges.add(edges);
     }
 
     this.render();
+
+    console.timeEnd('paint');
   }
 }
 
@@ -158,7 +206,7 @@ onMounted(() => {
   initGenerator();
 
   graphic = new MazeGraphic(container.value);
-  graphic.paintAll();
+  graphic.paint();
   graphic.fitAndCenter();
 
   useResizeObserver(container, ([entry]) => {
@@ -172,7 +220,7 @@ onMounted(() => {
       initGenerator();
 
       graphic.setup();
-      graphic.paintAll();
+      graphic.paint();
       graphic.fitAndCenter();
     },
   );
@@ -184,7 +232,7 @@ onMounted(() => {
       initGenerator();
 
       graphic.setup();
-      graphic.paintAll();
+      graphic.paint();
       graphic.fitAndCenter();
     },
   );
@@ -193,8 +241,7 @@ onMounted(() => {
     if (settings.value.animate) {
       generator.step();
 
-      graphic.setup();
-      graphic.paintAll();
+      graphic.paint();
     }
     stepRaf = window.requestAnimationFrame(step);
   };
