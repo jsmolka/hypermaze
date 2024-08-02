@@ -30,7 +30,7 @@ import { CubeEdgesGeometry } from '@/graphic/cubeEdgesGeometry';
 import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
-import { InstancedMesh } from '@/graphic/instancedMesh';
+import { InstancedPositionMesh } from '@/graphic/instancedPositionMesh';
 import { Maze } from '@/modules/maze';
 import { neighbor } from '@/modules/neighbor';
 import { RecursiveBacktracking } from '@/modules/recursiveBacktracking';
@@ -81,7 +81,7 @@ class MazeGraphic extends Graphic {
     this.group.translateZ(-maze.dimensions / 2 + 1 / 2);
     this.scene.add(this.group);
 
-    this.cubes = new InstancedMesh(
+    this.cubes = new InstancedPositionMesh(
       new CubeGeometry(),
       new MeshBasicMaterial({ color: colors.brand3.int }),
       maze.elements + maze.connectors,
@@ -121,42 +121,26 @@ class MazeGraphic extends Graphic {
           const cy = 2 * y;
           const cz = 2 * z;
 
-          const matrixIndex = 16 * count++;
-          this.cubes.instanceMatrix.array[matrixIndex + 12] = cx;
-          this.cubes.instanceMatrix.array[matrixIndex + 13] = cy;
-          this.cubes.instanceMatrix.array[matrixIndex + 14] = cz;
-
+          this.cubes.setPositionAt(count++, cx, cy, cz);
           edgesPositions[neighbors].push(cx, cy, cz);
 
           if (neighbors & neighbor.px) {
-            const matrixIndex = 16 * count++;
-            this.cubes.instanceMatrix.array[matrixIndex + 12] = cx + 1;
-            this.cubes.instanceMatrix.array[matrixIndex + 13] = cy;
-            this.cubes.instanceMatrix.array[matrixIndex + 14] = cz;
-
+            this.cubes.setPositionAt(count++, cx + 1, cy, cz);
             edgesPositions[xAxis].push(cx + 1, cy, cz);
           }
           if (neighbors & neighbor.py) {
-            const matrixIndex = 16 * count++;
-            this.cubes.instanceMatrix.array[matrixIndex + 12] = cx;
-            this.cubes.instanceMatrix.array[matrixIndex + 13] = cy + 1;
-            this.cubes.instanceMatrix.array[matrixIndex + 14] = cz;
-
+            this.cubes.setPositionAt(count++, cx, cy + 1, cz);
             edgesPositions[yAxis].push(cx, cy + 1, cz);
           }
           if (neighbors & neighbor.pz) {
-            const matrixIndex = 16 * count++;
-            this.cubes.instanceMatrix.array[matrixIndex + 12] = cx;
-            this.cubes.instanceMatrix.array[matrixIndex + 13] = cy;
-            this.cubes.instanceMatrix.array[matrixIndex + 14] = cz + 1;
-
+            this.cubes.setPositionAt(count++, cx, cy, cz + 1);
             edgesPositions[zAxis].push(cx, cy, cz + 1);
           }
         }
       }
     }
     this.cubes.count = count;
-    this.cubes.instanceMatrix.needsUpdate = true;
+    this.cubes.positionAttribute.needsUpdate = true;
 
     dispose(this.edges);
 

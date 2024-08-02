@@ -44,10 +44,10 @@ export class InstancedLineSegments extends LineSegments {
   }
 
   getMatrixAt(index, matrix = new Matrix4()) {
-    return matrix.fromArray(this.geometry.attributes.matrixAttribute.array, 16 * index);
+    return matrix.fromArray(this.matrixAttribute.array, 16 * index);
   }
 
   setMatrixAt(index, matrix) {
-    matrix.toArray(this.geometry.attributes.matrixAttribute.array, 16 * index);
+    matrix.toArray(this.matrixAttribute.array, 16 * index);
   }
 }
