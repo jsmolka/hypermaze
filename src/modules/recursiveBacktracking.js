@@ -35,10 +35,8 @@ export class RecursiveBacktracking {
           this.x = x;
           this.y = y;
           this.z = z;
-
-          const coordinates = [x, y, z];
-          this.stack.push(coordinates);
-          return coordinates;
+          this.stack.push([x, y, z]);
+          return true;
         }
       }
 
@@ -55,11 +53,11 @@ export class RecursiveBacktracking {
           }
         }
       }
-      return null;
+      return false;
     }
   }
 
   build() {
-    while (this.step() != null);
+    while (this.step());
   }
 }
