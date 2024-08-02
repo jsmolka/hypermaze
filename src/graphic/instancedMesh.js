@@ -13,7 +13,7 @@ export class InstancedMesh extends InstancedMeshBase {
   }
 
   getPositionAt(index, position = new Vector3()) {
-    index *= 16;
+    index *= this.matrixAttribute.itemSize;
     position.x = this.matrixAttribute.array[index + 12];
     position.y = this.matrixAttribute.array[index + 13];
     position.z = this.matrixAttribute.array[index + 14];
@@ -21,14 +21,14 @@ export class InstancedMesh extends InstancedMeshBase {
   }
 
   setPositionAt(index, x, y, z) {
-    index *= 16;
+    index *= this.matrixAttribute.itemSize;
     this.matrixAttribute.array[index + 12] = x;
     this.matrixAttribute.array[index + 13] = y;
     this.matrixAttribute.array[index + 14] = z;
   }
 
   getScaleAt(index, scale = new Vector3()) {
-    index *= 16;
+    index *= this.matrixAttribute.itemSize;
     scale.x = this.matrixAttribute.array[index];
     scale.y = this.matrixAttribute.array[index + 5];
     scale.z = this.matrixAttribute.array[index + 10];
@@ -36,7 +36,7 @@ export class InstancedMesh extends InstancedMeshBase {
   }
 
   setScaleAt(index, x, y, z) {
-    index *= 16;
+    index *= this.matrixAttribute.itemSize;
     this.matrixAttribute.array[index] = x;
     this.matrixAttribute.array[index + 5] = y;
     this.matrixAttribute.array[index + 10] = z;

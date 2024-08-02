@@ -36,7 +36,7 @@ export class InstancedPositionLineSegments extends LineSegments {
   }
 
   getPositionAt(index, position = new Vector3()) {
-    index *= 3;
+    index *= this.positionAttribute.itemSize;
     position.x = this.positionAttribute.array[index + 0];
     position.y = this.positionAttribute.array[index + 1];
     position.z = this.positionAttribute.array[index + 2];
@@ -44,7 +44,7 @@ export class InstancedPositionLineSegments extends LineSegments {
   }
 
   setPositionAt(index, x, y, z) {
-    index *= 3;
+    index *= this.positionAttribute.itemSize;
     this.positionAttribute.array[index + 0] = x;
     this.positionAttribute.array[index + 1] = y;
     this.positionAttribute.array[index + 2] = z;
