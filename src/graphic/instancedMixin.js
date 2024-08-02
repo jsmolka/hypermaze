@@ -4,25 +4,33 @@ const matrix4 = new Matrix4();
 
 export const instancedMixin = {
   getPositionAt(index, position = new Vector3()) {
-    return position.setFromMatrixPosition(this.getMatrixAt(index, matrix4));
+    index *= 16;
+    position.x = this.matrixAttribute.array[index + 12];
+    position.y = this.matrixAttribute.array[index + 13];
+    position.z = this.matrixAttribute.array[index + 14];
+    return position;
   },
 
   setPositionAt(index, x, y, z) {
-    this.setMatrixAt(index, this.getMatrixAt(index, matrix4).setPosition(x, y, z));
+    index *= 16;
+    this.matrixAttribute.array[index + 12] = x;
+    this.matrixAttribute.array[index + 13] = y;
+    this.matrixAttribute.array[index + 14] = z;
   },
 
   getScaleAt(index, scale = new Vector3()) {
-    return scale.setFromMatrixScale(this.getMatrixAt(index, matrix4));
+    index *= 16;
+    scale.x = this.matrixAttribute.array[index];
+    scale.y = this.matrixAttribute.array[index + 5];
+    scale.z = this.matrixAttribute.array[index + 10];
+    return scale;
   },
 
   setScaleAt(index, x, y, z) {
-    if (x instanceof Vector3) {
-      const v = x;
-      x = v.x;
-      y = v.y;
-      z = v.z;
-    }
-    this.setMatrixAt(index, this.getMatrixAt(index, matrix4).makeScale(x, y, z));
+    index *= 16;
+    this.matrixAttribute.array[index] = x;
+    this.matrixAttribute.array[index + 5] = y;
+    this.matrixAttribute.array[index + 10] = z;
   },
 
   getRotationAt(index, quaternion = new Quaternion()) {
@@ -30,7 +38,9 @@ export const instancedMixin = {
   },
 
   setRotationAt(index, x, y, z, w) {
-    const q = x instanceof Quaternion ? x : new Quaternion(x, y, z, w);
-    this.setMatrixAt(index, this.getMatrixAt(index, matrix4).makeRotationFromQuaternion(q));
+    this.setMatrixAt(
+      index,
+      this.getMatrixAt(index, matrix4).makeRotationFromQuaternion(new Quaternion(x, y, z, w)),
+    );
   },
 };

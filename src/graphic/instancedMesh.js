@@ -7,6 +7,10 @@ export class InstancedMesh extends InstancedMeshBase {
     Object.assign(this, instancedMixin);
   }
 
+  get matrixAttribute() {
+    return this.instanceMatrix;
+  }
+
   getMatrixAt(index, matrix = new Matrix4()) {
     super.getMatrixAt(index, matrix);
     return matrix;

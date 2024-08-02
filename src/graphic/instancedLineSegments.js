@@ -10,18 +10,18 @@ export class InstancedLineSegments extends LineSegments {
 
     this.geometry.instanceCount = count;
     this.geometry.setAttribute(
-      'transformMatrix',
+      'matrixAttribute',
       new InstancedBufferAttribute(new Float32Array(16 * count), 16),
     );
 
     this.material.onBeforeCompile = function (shader) {
       shader.vertexShader = `
-        attribute mat4 transformMatrix;
+        attribute mat4 matrixAttribute;
         ${shader.vertexShader}
       `.replace(
         `#include <begin_vertex>`,
         `#include <begin_vertex>
-         transformed = (transformMatrix * vec4(transformed, 1.0)).xyz;
+         transformed = (matrixAttribute * vec4(transformed, 1.0)).xyz;
       `,
       );
     };
@@ -39,11 +39,15 @@ export class InstancedLineSegments extends LineSegments {
     this.geometry.instanceCount = value;
   }
 
+  get matrixAttribute() {
+    return this.geometry.attributes.matrixAttribute;
+  }
+
   getMatrixAt(index, matrix = new Matrix4()) {
-    return matrix.fromArray(this.geometry.attributes.transformMatrix.array, 16 * index);
+    return matrix.fromArray(this.geometry.attributes.matrixAttribute.array, 16 * index);
   }
 
   setMatrixAt(index, matrix) {
-    matrix.toArray(this.geometry.attributes.transformMatrix.array, 16 * index);
+    matrix.toArray(this.geometry.attributes.matrixAttribute.array, 16 * index);
   }
 }
