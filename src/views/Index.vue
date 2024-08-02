@@ -30,6 +30,7 @@ import { CubeEdgesGeometry } from '@/graphic/cubeEdgesGeometry';
 import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
+import { InstancedPositionLineSegments } from '@/graphic/instancedPositionLineSegments';
 import { InstancedPositionMesh } from '@/graphic/instancedPositionMesh';
 import { Maze } from '@/modules/maze';
 import { neighbor } from '@/modules/neighbor';
@@ -38,15 +39,7 @@ import { useSettingsStore } from '@/stores/settings';
 import { colors } from '@/utils/colors';
 import { useResizeObserver } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
-import {
-  Group,
-  InstancedBufferAttribute,
-  InstancedBufferGeometry,
-  LineBasicMaterial,
-  LineSegments,
-  Mesh,
-  MeshBasicMaterial,
-} from 'three';
+import { Group, LineBasicMaterial, Mesh, MeshBasicMaterial } from 'three';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const { settings } = storeToRefs(useSettingsStore());
@@ -149,30 +142,13 @@ class MazeGraphic extends Graphic {
         continue;
       }
 
-      const edgesGeometry = new InstancedBufferGeometry().copy(new CubeEdgesGeometry(neighborMask));
-      edgesGeometry.instanceCount = positions.length / 3;
-      edgesGeometry.setAttribute(
-        'offset',
-        new InstancedBufferAttribute(new Float32Array(positions), 3),
+      const edges = new InstancedPositionLineSegments(
+        new CubeEdgesGeometry(neighborMask),
+        new LineBasicMaterial({ color: colors.shade8.int }),
+        positions.length / 3,
       );
-
-      const edgesMaterial = new LineBasicMaterial({
-        color: colors.shade8.int,
-        onBeforeCompile: function (shader) {
-          shader.vertexShader = `
-            attribute vec3 offset;
-            ${shader.vertexShader}
-          `.replace(
-            `#include <begin_vertex>`,
-            `#include <begin_vertex>
-             transformed += offset;
-          `,
-          );
-        },
-      });
-
-      const edges = new LineSegments(edgesGeometry, edgesMaterial);
       edges.frustumCulled = false;
+      edges.positionAttribute.copyArray(positions);
       this.edges.add(edges);
     }
 
