@@ -1,42 +1,37 @@
 <template>
-  <Form class="fixed top-4 left-4 p-3 bg-shade-8 border rounded-sm">
+  <div class="fixed top-2 left-2 flex gap-2 p-2 bg-shade-8 border rounded-sm">
+    <Button size="icon" title="Reset camera" variant="ghost" @click="reset">
+      <CubeIcon />
+    </Button>
     <Button
-      variant="secondary"
-      @click="
-        graphic.resetCamera();
-        graphic.fitAndCenter();
-      "
-      >Reset camera</Button
+      :class="{ '!bg-shade-6': settings.animate }"
+      size="icon"
+      title="Animate"
+      variant="ghost"
+      @click="settings.animate = !settings.animate"
     >
-    <FormItem>
-      <Label>Size</Label>
-      <InputNumber v-model="settings.size" :min="1" :max="1000" />
-    </FormItem>
-    <FormItem>
-      <Label>Animate</Label>
-      <Switch v-model="settings.animate" />
-    </FormItem>
-  </Form>
+      <PlayIcon />
+    </Button>
+    <InputNumber class="max-w-12" v-model="settings.size" :min="1" :max="250" />
+  </div>
   <div ref="container" class="h-full" />
 </template>
 
 <script setup>
 import { Button } from '@/components/ui/button';
-import { Form, FormItem } from '@/components/ui/form';
 import { InputNumber } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { CubeEdgesGeometry } from '@/graphic/cubeEdgesGeometry';
 import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
-import { InstancedMesh } from '@/graphic/instancedMesh';
 import { InstancedPositionLineSegments } from '@/graphic/instancedPositionLineSegments';
+import { InstancedPositionMesh } from '@/graphic/instancedPositionMesh';
 import { Maze } from '@/modules/maze';
 import { neighbor } from '@/modules/neighbor';
 import { RecursiveBacktracking } from '@/modules/recursiveBacktracking';
 import { useSettingsStore } from '@/stores/settings';
 import { colors } from '@/utils/colors';
+import { CubeIcon, PlayIcon } from '@radix-icons/vue';
 import { useResizeObserver } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
 import { Group, LineBasicMaterial, Mesh, MeshBasicMaterial } from 'three';
@@ -80,7 +75,7 @@ class MazeGraphic extends Graphic {
     this.group.translateZ(-maze.dimensions / 2 + 1 / 2);
     this.scene.add(this.group);
 
-    this.cubes = new InstancedMesh(
+    this.cubes = new InstancedPositionMesh(
       new CubeGeometry(),
       new MeshBasicMaterial({ color: colors.brand3.int }),
       maze.elements + maze.connectors,
@@ -99,8 +94,6 @@ class MazeGraphic extends Graphic {
   }
 
   paint() {
-    console.time('paint');
-
     for (const positions of this.edgesPositions) {
       positions.length = 0;
     }
@@ -134,7 +127,7 @@ class MazeGraphic extends Graphic {
       }
     }
     this.cubes.count = count;
-    this.cubes.matrixAttribute.needsUpdate = true;
+    this.cubes.positionAttribute.needsUpdate = true;
 
     dispose(this.edges);
     for (const [neighborMask, positions] of this.edgesPositions.entries()) {
@@ -153,13 +146,16 @@ class MazeGraphic extends Graphic {
     }
 
     this.render();
-
-    console.timeEnd('paint');
   }
 }
 
 let graphic = null;
 let stepRaf = null;
+
+const reset = () => {
+  graphic.resetCamera();
+  graphic.fitAndCenter();
+};
 
 onMounted(() => {
   initMaze();
@@ -197,15 +193,15 @@ onMounted(() => {
     },
   );
 
-  const step = () => {
+  const animate = () => {
     if (settings.value.animate) {
       generator.step();
 
       graphic.paint();
     }
-    stepRaf = window.requestAnimationFrame(step);
+    stepRaf = window.requestAnimationFrame(animate);
   };
-  stepRaf = window.requestAnimationFrame(step);
+  animate();
 });
 
 onBeforeUnmount(() => {
