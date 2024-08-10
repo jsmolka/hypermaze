@@ -5,9 +5,9 @@ export class Renderer extends WebGLRenderer {
   constructor(container, options = {}) {
     options = _.merge(
       {
-        alpha: true,
+        alpha: false,
         antialias: true,
-        logarithmicDepthBuffer: true,
+        logarithmicDepthBuffer: false,
         preserveDrawingBuffer: false,
         stencil: false,
       },

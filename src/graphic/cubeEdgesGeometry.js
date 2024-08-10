@@ -9,8 +9,8 @@ export class CubeEdgesGeometry extends BufferGeometry {
     const ns = -size / 2;
     const vertices = [];
 
-    const hasEdge = (flag1, flag2) => {
-      const mask = flag1 | flag2;
+    const hasEdge = (n1, n2) => {
+      const mask = n1 | n2;
       return (neighborMask & mask) === 0 || (neighborMask & mask) === mask;
     };
 

@@ -41,20 +41,13 @@ const { settings } = storeToRefs(useSettingsStore());
 
 const container = ref();
 
-const xAxis = neighbor.px | neighbor.nx;
-const yAxis = neighbor.py | neighbor.ny;
-const zAxis = neighbor.pz | neighbor.nz;
-
 let maze = null;
-const initMaze = () => {
+let mazeGenerator = null;
+const init = () => {
   maze = new Maze(settings.value.size);
-};
-
-let generator = null;
-const initGenerator = () => {
-  generator = new RecursiveBacktracking(maze);
+  mazeGenerator = new RecursiveBacktracking(maze);
   if (!settings.value.animate) {
-    generator.build();
+    mazeGenerator.build();
   }
 };
 
@@ -62,7 +55,6 @@ class MazeGraphic extends Graphic {
   constructor(container, options = {}) {
     super(container, options);
     this.setup();
-
     this.edgesPositions = Array.from(Array(1 << 6), () => []);
   }
 
@@ -94,6 +86,10 @@ class MazeGraphic extends Graphic {
   }
 
   paint() {
+    const xAxis = neighbor.px | neighbor.nx;
+    const yAxis = neighbor.py | neighbor.ny;
+    const zAxis = neighbor.pz | neighbor.nz;
+
     for (const positions of this.edgesPositions) {
       positions.length = 0;
     }
@@ -140,8 +136,8 @@ class MazeGraphic extends Graphic {
         new LineBasicMaterial({ color: colors.shade8.int }),
         positions.length / 3,
       );
-      edges.frustumCulled = false;
       edges.positionAttribute.copyArray(positions);
+      edges.frustumCulled = false;
       this.edges.add(edges);
     }
 
@@ -158,9 +154,7 @@ const reset = () => {
 };
 
 onMounted(() => {
-  initMaze();
-  initGenerator();
-
+  init();
   graphic = new MazeGraphic(container.value);
   graphic.paint();
   graphic.fitAndCenter();
@@ -172,9 +166,7 @@ onMounted(() => {
   watch(
     () => settings.value.size,
     () => {
-      initMaze();
-      initGenerator();
-
+      init();
       graphic.setup();
       graphic.paint();
       graphic.fitAndCenter();
@@ -184,24 +176,20 @@ onMounted(() => {
   watch(
     () => settings.value.animate,
     () => {
-      initMaze();
-      initGenerator();
-
-      graphic.setup();
+      init();
       graphic.paint();
       graphic.fitAndCenter();
     },
   );
 
-  const animate = () => {
+  const step = () => {
     if (settings.value.animate) {
-      generator.step();
-
+      mazeGenerator.step();
       graphic.paint();
     }
-    stepRaf = window.requestAnimationFrame(animate);
+    stepRaf = window.requestAnimationFrame(step);
   };
-  animate();
+  step();
 });
 
 onBeforeUnmount(() => {
