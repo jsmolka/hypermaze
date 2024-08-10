@@ -79,6 +79,7 @@ class MazeGraphic extends Graphic {
       new MeshBasicMaterial({ color: colors.brand3.int }),
       maze.elements + maze.connectors,
     );
+    this.cubes.frustumCulled = false;
     this.group.add(this.cubes);
 
     this.edges = new Group();
