@@ -1,3 +1,4 @@
+// [0, n)
 export function randomInt(n) {
   return (Math.random() * n) >>> 0;
 }

@@ -25,9 +25,9 @@ export class RecursiveBacktracking extends Generator {
       shuffle(directions);
       for (const direction of directions) {
         const [x, y, z, p, n] = direction(this.x, this.y, this.z);
-        if (x < 0 || x >= this.maze.size) continue;
-        if (y < 0 || y >= this.maze.size) continue;
-        if (z < 0 || z >= this.maze.size) continue;
+        if (this.maze.outOfBounds(x, y, z)) {
+          continue;
+        }
         const j = this.maze.index(x, y, z);
         if (this.maze[j] === 0) {
           const i = this.maze.index(this.x, this.y, this.z);
@@ -45,9 +45,9 @@ export class RecursiveBacktracking extends Generator {
         [this.x, this.y, this.z] = this.stack.pop();
         for (const direction of directions) {
           const [x, y, z] = direction(this.x, this.y, this.z);
-          if (x < 0 || x >= this.maze.size) continue;
-          if (y < 0 || y >= this.maze.size) continue;
-          if (z < 0 || z >= this.maze.size) continue;
+          if (this.maze.outOfBounds(x, y, z)) {
+            continue;
+          }
           const j = this.maze.index(x, y, z);
           if (this.maze[j] === 0) {
             continue loop;
