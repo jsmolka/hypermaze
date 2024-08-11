@@ -1,3 +1,4 @@
+import { Generator } from '@/modules/generator';
 import { neighbor } from '@/modules/neighbor';
 import { randomInt, shuffle } from '@/utils/random';
 
@@ -10,9 +11,9 @@ const directions = [
   (x, y, z) => [x, y, z - 1, neighbor.nz, neighbor.pz],
 ];
 
-export class RecursiveBacktracking {
+export class RecursiveBacktracking extends Generator {
   constructor(maze) {
-    this.maze = maze;
+    super(maze);
     this.x = randomInt(maze.size);
     this.y = randomInt(maze.size);
     this.z = randomInt(maze.size);
@@ -55,9 +56,5 @@ export class RecursiveBacktracking {
       }
       return false;
     }
-  }
-
-  build() {
-    while (this.step());
   }
 }
