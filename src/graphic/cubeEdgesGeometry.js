@@ -2,7 +2,7 @@ import { neighbor } from '@/modules/neighbor';
 import { BufferGeometry, Float32BufferAttribute } from 'three';
 
 export class CubeEdgesGeometry extends BufferGeometry {
-  constructor(neighborMask, size = 1) {
+  constructor(neighbors, size = 1) {
     super();
 
     const ps = +size / 2;
@@ -11,7 +11,7 @@ export class CubeEdgesGeometry extends BufferGeometry {
 
     const hasEdge = (n1, n2) => {
       const mask = n1 | n2;
-      return (neighborMask & mask) === 0 || (neighborMask & mask) === mask;
+      return (neighbors & mask) === 0 || (neighbors & mask) === mask;
     };
 
     if (hasEdge(neighbor.px, neighbor.py)) {

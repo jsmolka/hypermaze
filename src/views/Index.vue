@@ -1,7 +1,10 @@
 <template>
   <div class="fixed top-2 left-2 flex gap-2 p-2 bg-shade-8 border rounded-sm">
-    <Button size="icon" title="Reset camera" variant="ghost" @click="reset">
+    <Button size="icon" title="Reset view" variant="ghost" @click="resetView">
       <CubeIcon />
+    </Button>
+    <Button size="icon" title="Repaint" variant="ghost" @click="repaint">
+      <ReloadIcon />
     </Button>
     <Button
       :class="{ '!bg-shade-6': settings.animate }"
@@ -12,7 +15,7 @@
     >
       <PlayIcon />
     </Button>
-    <InputNumber class="max-w-12" v-model="settings.size" :min="1" :max="250" />
+    <InputNumber class="max-w-12" v-model="settings.size" :min="2" :max="250" />
   </div>
   <div ref="container" class="h-full" />
 </template>
@@ -31,7 +34,7 @@ import { neighbor } from '@/modules/neighbor';
 import { RecursiveBacktracking } from '@/modules/recursiveBacktracking';
 import { useSettingsStore } from '@/stores/settings';
 import { colors } from '@/utils/colors';
-import { CubeIcon, PlayIcon } from '@radix-icons/vue';
+import { CubeIcon, PlayIcon, ReloadIcon } from '@radix-icons/vue';
 import { useResizeObserver } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
 import { Group, LineBasicMaterial, Mesh, MeshBasicMaterial } from 'three';
@@ -39,50 +42,62 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const { settings } = storeToRefs(useSettingsStore());
 
-const container = ref();
-
-let maze = null;
-let mazeGenerator = null;
-const init = () => {
-  maze = new Maze(settings.value.size);
-  mazeGenerator = new RecursiveBacktracking(maze);
-  if (!settings.value.animate) {
-    mazeGenerator.build();
-  }
-};
-
 class MazeGraphic extends Graphic {
   constructor(container, options = {}) {
     super(container, options);
-    this.setup();
-    this.edgesPositions = Array.from(Array(1 << 6), () => []);
+    this.initMaze();
+    this.initObjects();
   }
 
-  setup() {
+  initMaze() {
+    this.maze = new Maze(settings.value.size);
+    this.mazeGenerator = new RecursiveBacktracking(this.maze);
+
+    window.cancelAnimationFrame(this.stepRaf);
+    if (settings.value.animate) {
+      const step = () => {
+        if (this.mazeGenerator.step()) {
+          this.stepRaf = window.requestAnimationFrame(step);
+        }
+        this.paint();
+      };
+      this.stepRaf = window.requestAnimationFrame(step);
+    } else {
+      this.mazeGenerator.build();
+    }
+  }
+
+  initObjects() {
     dispose(this.scene);
 
-    this.group = new Group();
-    this.group.translateX(-maze.dimensions / 2 + 1 / 2);
-    this.group.translateY(-maze.dimensions / 2 + 1 / 2);
-    this.group.translateZ(-maze.dimensions / 2 + 1 / 2);
-    this.scene.add(this.group);
+    const group = new Group();
+    group.translateX(-this.maze.dimensions / 2 + 1 / 2);
+    group.translateY(-this.maze.dimensions / 2 + 1 / 2);
+    group.translateZ(-this.maze.dimensions / 2 + 1 / 2);
+    this.scene.add(group);
 
     this.cubes = new InstancedPositionMesh(
       new CubeGeometry(),
       new MeshBasicMaterial({ color: colors.brand3.int }),
-      maze.elements + maze.connectors,
+      this.maze.elements + this.maze.connectors,
     );
     this.cubes.frustumCulled = false;
-    this.group.add(this.cubes);
+    group.add(this.cubes);
 
     this.edges = new Group();
-    this.group.add(this.edges);
+    this.edgesPositions = Array.from(Array(1 << 6), () => []);
+    group.add(this.edges);
 
     const bbox = new Mesh(
-      new CubeGeometry(maze.dimensions),
+      new CubeGeometry(this.maze.dimensions),
       new MeshBasicMaterial({ opacity: 0, transparent: true }),
     );
     this.scene.add(bbox);
+  }
+
+  dispose() {
+    window.cancelAnimationFrame(this.stepRaf);
+    super.dispose();
   }
 
   paint() {
@@ -96,10 +111,10 @@ class MazeGraphic extends Graphic {
 
     let i = 0;
     let count = 0;
-    for (let z = 0; z < maze.dimensions; z += 2) {
-      for (let y = 0; y < maze.dimensions; y += 2) {
-        for (let x = 0; x < maze.dimensions; x += 2) {
-          const neighbors = maze[i++];
+    for (let z = 0; z < this.maze.dimensions; z += 2) {
+      for (let y = 0; y < this.maze.dimensions; y += 2) {
+        for (let x = 0; x < this.maze.dimensions; x += 2) {
+          const neighbors = this.maze[i++];
           if (neighbors === 0) {
             continue;
           }
@@ -126,13 +141,13 @@ class MazeGraphic extends Graphic {
     this.cubes.positionAttribute.needsUpdate = true;
 
     dispose(this.edges);
-    for (const [neighborMask, positions] of this.edgesPositions.entries()) {
+    for (const [neighbors, positions] of this.edgesPositions.entries()) {
       if (positions.length === 0) {
         continue;
       }
 
       const edges = new InstancedPositionLineSegments(
-        new CubeEdgesGeometry(neighborMask),
+        new CubeEdgesGeometry(neighbors),
         new LineBasicMaterial({ color: colors.shade8.int }),
         positions.length / 3,
       );
@@ -146,15 +161,10 @@ class MazeGraphic extends Graphic {
 }
 
 let graphic = null;
-let stepRaf = null;
 
-const reset = () => {
-  graphic.resetCamera();
-  graphic.fitAndCenter();
-};
+const container = ref();
 
 onMounted(() => {
-  init();
   graphic = new MazeGraphic(container.value);
   graphic.paint();
   graphic.fitAndCenter();
@@ -166,8 +176,8 @@ onMounted(() => {
   watch(
     () => settings.value.size,
     () => {
-      init();
-      graphic.setup();
+      graphic.initMaze();
+      graphic.initObjects();
       graphic.paint();
       graphic.fitAndCenter();
     },
@@ -176,26 +186,25 @@ onMounted(() => {
   watch(
     () => settings.value.animate,
     () => {
-      init();
+      graphic.initMaze();
       graphic.paint();
       graphic.fitAndCenter();
     },
   );
-
-  const step = () => {
-    if (settings.value.animate) {
-      mazeGenerator.step();
-      graphic.paint();
-    }
-    stepRaf = window.requestAnimationFrame(step);
-  };
-  step();
 });
 
 onBeforeUnmount(() => {
-  window.cancelAnimationFrame(stepRaf);
-
   graphic.dispose();
   graphic = null;
 });
+
+const resetView = () => {
+  graphic.resetCamera();
+  graphic.fitAndCenter();
+};
+
+const repaint = () => {
+  graphic.initMaze();
+  graphic.paint();
+};
 </script>
