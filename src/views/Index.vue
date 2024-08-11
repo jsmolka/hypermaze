@@ -31,7 +31,7 @@ import { InstancedPositionLineSegments } from '@/graphic/instancedPositionLineSe
 import { InstancedPositionMesh } from '@/graphic/instancedPositionMesh';
 import { Maze } from '@/modules/maze';
 import { neighbor } from '@/modules/neighbor';
-import { RecursiveBacktracking } from '@/modules/recursiveBacktracking';
+import { Prim } from '@/modules/prim';
 import { useSettingsStore } from '@/stores/settings';
 import { colors } from '@/utils/colors';
 import { CubeIcon, PlayIcon, ReloadIcon } from '@radix-icons/vue';
@@ -51,7 +51,7 @@ class MazeGraphic extends Graphic {
 
   initMaze() {
     this.maze = new Maze(settings.value.size);
-    this.mazeGenerator = new RecursiveBacktracking(this.maze);
+    this.mazeGenerator = new Prim(this.maze);
 
     window.cancelAnimationFrame(this.stepRaf);
     if (settings.value.animate) {
@@ -114,7 +114,7 @@ class MazeGraphic extends Graphic {
     for (let z = 0; z < this.maze.dimensions; z += 2) {
       for (let y = 0; y < this.maze.dimensions; y += 2) {
         for (let x = 0; x < this.maze.dimensions; x += 2) {
-          const neighbors = this.maze[i++];
+          const neighbors = this.maze[i++] & 0x3f;
           if (neighbors === 0) {
             continue;
           }
