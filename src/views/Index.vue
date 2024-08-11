@@ -15,7 +15,12 @@
     >
       <PlayIcon />
     </Button>
-    <InputNumber class="max-w-12" v-model="settings.size" :min="2" :max="250" />
+    <Select class="w-fit" v-model="settings.algorithm" :items="Settings.Algorithm.$values">
+      <template #item="{ item }">
+        <SelectItemText>{{ Settings.Algorithm.$translate(item) }}</SelectItemText>
+      </template>
+    </Select>
+    <InputNumber class="w-12" v-model="settings.size" :min="2" :max="250" />
   </div>
   <div ref="container" class="h-full" />
 </template>
@@ -23,6 +28,7 @@
 <script setup>
 import { Button } from '@/components/ui/button';
 import { InputNumber } from '@/components/ui/input';
+import { Select, SelectItemText } from '@/components/ui/select';
 import { CubeEdgesGeometry } from '@/graphic/cubeEdgesGeometry';
 import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
@@ -32,6 +38,8 @@ import { InstancedPositionMesh } from '@/graphic/instancedPositionMesh';
 import { Maze } from '@/modules/maze';
 import { neighbor } from '@/modules/neighbor';
 import { Prim } from '@/modules/prim';
+import { RecursiveBacktracking } from '@/modules/recursiveBacktracking';
+import { Settings } from '@/modules/settings';
 import { useSettingsStore } from '@/stores/settings';
 import { colors } from '@/utils/colors';
 import { CubeIcon, PlayIcon, ReloadIcon } from '@radix-icons/vue';
@@ -51,7 +59,14 @@ class MazeGraphic extends Graphic {
 
   initMaze() {
     this.maze = new Maze(settings.value.size);
-    this.mazeGenerator = new Prim(this.maze);
+    switch (settings.value.algorithm) {
+      case Settings.Algorithm.recursiveBacktracking:
+        this.mazeGenerator = new RecursiveBacktracking(this.maze);
+        break;
+      case Settings.Algorithm.prim:
+        this.mazeGenerator = new Prim(this.maze);
+        break;
+    }
 
     window.cancelAnimationFrame(this.stepRaf);
     if (settings.value.animate) {
@@ -184,7 +199,7 @@ onMounted(() => {
   );
 
   watch(
-    () => settings.value.animate,
+    () => [settings.value.animate, settings.value.algorithm],
     () => {
       graphic.initMaze();
       graphic.paint();
