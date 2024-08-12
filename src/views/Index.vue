@@ -35,6 +35,7 @@ import { dispose } from '@/graphic/dispose';
 import { Graphic } from '@/graphic/graphic';
 import { InstancedPositionLineSegments } from '@/graphic/instancedPositionLineSegments';
 import { InstancedPositionMesh } from '@/graphic/instancedPositionMesh';
+import { Kruskal } from '@/modules/kruskal';
 import { Maze } from '@/modules/maze';
 import { neighbor } from '@/modules/neighbor';
 import { Prim } from '@/modules/prim';
@@ -65,6 +66,9 @@ class MazeGraphic extends Graphic {
         break;
       case Settings.Algorithm.prim:
         this.mazeGenerator = new Prim(this.maze);
+        break;
+      case Settings.Algorithm.kruskal:
+        this.mazeGenerator = new Kruskal(this.maze);
         break;
     }
 

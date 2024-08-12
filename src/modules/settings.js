@@ -5,6 +5,7 @@ export class Settings {
   static Algorithm = new Enum([
     { key: 'recursiveBacktracking', translation: 'Recursive backtracking' },
     { key: 'prim', translation: "Prim's algorithm" },
+    { key: 'kruskal', translation: "Kruskal's algorithm" },
   ]);
 
   constructor() {
