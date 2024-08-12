@@ -17,10 +17,7 @@ export class Maze extends Uint8Array {
   }
 
   outOfBounds(x, y, z) {
-    if (x < 0 || x >= this.size) return true;
-    if (y < 0 || y >= this.size) return true;
-    if (z < 0 || z >= this.size) return true;
-    return false;
+    return x < 0 || x >= this.size || y < 0 || y >= this.size || z < 0 || z >= this.size;
   }
 
   index(x, y, z) {
