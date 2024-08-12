@@ -20,10 +20,10 @@ export class Enum {
 
     this.$translate = (value) => {
       const translation = reverse.get(value)?.translation;
-      if (_.isFunction(translation)) {
-        return translation();
-      } else if (_.isString(translation)) {
+      if (_.isString(translation)) {
         return translation;
+      } else if (_.isFunction(translation)) {
+        return translation();
       }
       return '?';
     };

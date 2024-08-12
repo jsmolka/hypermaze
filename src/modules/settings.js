@@ -1,5 +1,5 @@
 import { Enum } from '@/utils/enum';
-import { createSchema, primitive } from '@/utils/persist';
+import { defineSchema, primitive } from '@/utils/persist';
 
 export class Settings {
   static Algorithm = new Enum([
@@ -14,7 +14,7 @@ export class Settings {
   }
 }
 
-createSchema(Settings, {
+defineSchema(Settings, {
   size: primitive(),
   animate: primitive(),
   algorithm: primitive(),
