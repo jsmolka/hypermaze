@@ -2,6 +2,7 @@ export class Maze extends Uint8Array {
   constructor(size) {
     super(size ** 3);
     this.size = size;
+    this.strides = [1, this.size, this.size ** 2];
   }
 
   get elements() {

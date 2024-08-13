@@ -3,9 +3,9 @@ import { neighbor } from '@/modules/neighbor';
 import { shuffle } from '@/utils/random';
 
 const directions = [
-  (x, y, z) => [x + 1, y, z, neighbor.px, neighbor.nx],
-  (x, y, z) => [x, y + 1, z, neighbor.py, neighbor.ny],
-  (x, y, z) => [x, y, z + 1, neighbor.pz, neighbor.nz],
+  [neighbor.px, neighbor.nx],
+  [neighbor.py, neighbor.ny],
+  [neighbor.pz, neighbor.nz],
 ];
 
 export class Kruskal extends Generator {
@@ -14,12 +14,14 @@ export class Kruskal extends Generator {
     this.sets = Array.from(Array(maze.length), (_, index) => [index]);
 
     this.edges = [];
+    let i = 0;
     for (let z = 0; z < maze.size; z++) {
       for (let y = 0; y < maze.size; y++) {
         for (let x = 0; x < maze.size; x++) {
-          if (x + 1 < maze.size) this.edges.push([x, y, z, 0]);
-          if (y + 1 < maze.size) this.edges.push([x, y, z, 1]);
-          if (z + 1 < maze.size) this.edges.push([x, y, z, 2]);
+          if (x + 1 < maze.size) this.edges.push([i, 0]);
+          if (y + 1 < maze.size) this.edges.push([i, 1]);
+          if (z + 1 < maze.size) this.edges.push([i, 2]);
+          i++;
         }
       }
     }
@@ -28,10 +30,8 @@ export class Kruskal extends Generator {
 
   step() {
     while (this.edges.length > 0) {
-      const [x1, y1, z1, direction] = this.edges.pop();
-      const [x2, y2, z2, pn, nn] = directions[direction](x1, y1, z1);
-      const i = this.maze.index(x1, y1, z1);
-      const j = this.maze.index(x2, y2, z2);
+      const [i, direction] = this.edges.pop();
+      const j = i + this.maze.strides[direction];
       let set1 = this.sets[i];
       let set2 = this.sets[j];
       if (set1 !== set2) {
@@ -43,6 +43,9 @@ export class Kruskal extends Generator {
           set1.push(index);
           this.sets[index] = set1;
         }
+
+        const [pn, nn] = directions[direction];
+
         this.maze[i] |= pn;
         this.maze[j] |= nn;
         break;
