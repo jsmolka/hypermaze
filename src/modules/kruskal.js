@@ -33,7 +33,6 @@ export class Kruskal extends Generator {
   constructor(maze) {
     super(maze);
     this.sets = Array.from(Array(maze.length), (_, index) => [index]);
-
     this.edges = new Edges(maze.size);
     let i = 0;
     for (let z = 0; z < maze.size; z++) {
@@ -51,24 +50,27 @@ export class Kruskal extends Generator {
 
   step() {
     while (this.edges.length > 0) {
-      const [i, dim] = this.edges.pop();
-      const j = i + this.maze.strides[dim];
+      const [i, dimension] = this.edges.pop();
+      const j = i + this.maze.strides[dimension];
+
       let set1 = this.sets[i];
       let set2 = this.sets[j];
-      if (set1 !== set2) {
-        if (set2.length > set1.length) {
-          [set1, set2] = [set2, set1];
-        }
-
-        for (const index of set2) {
-          set1.push(index);
-          this.sets[index] = set1;
-        }
-
-        this.maze[i] |= neighbor.px << dim;
-        this.maze[j] |= neighbor.nx << dim;
-        break;
+      if (set1 === set2) {
+        continue;
       }
+
+      if (set1.length < set2.length) {
+        [set1, set2] = [set2, set1];
+      }
+
+      for (const index of set2) {
+        set1.push(index);
+        this.sets[index] = set1;
+      }
+
+      this.maze[i] |= neighbor.px << dimension;
+      this.maze[j] |= neighbor.nx << dimension;
+      break;
     }
     return this.edges.length > 0;
   }
