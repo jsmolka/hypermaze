@@ -2,11 +2,9 @@ import { Generator } from '@/modules/generator';
 import { neighbor } from '@/modules/neighbor';
 import { shuffle } from '@/utils/random';
 
-const directions = [
-  [neighbor.px, neighbor.nx],
-  [neighbor.py, neighbor.ny],
-  [neighbor.pz, neighbor.nz],
-];
+class Edges {
+  constructor(size) {}
+}
 
 export class Kruskal extends Generator {
   constructor(maze) {
@@ -18,9 +16,9 @@ export class Kruskal extends Generator {
     for (let z = 0; z < maze.size; z++) {
       for (let y = 0; y < maze.size; y++) {
         for (let x = 0; x < maze.size; x++) {
-          if (x + 1 < maze.size) this.edges.push([i, 0]);
-          if (y + 1 < maze.size) this.edges.push([i, 1]);
-          if (z + 1 < maze.size) this.edges.push([i, 2]);
+          if (x + 1 < maze.size) this.edges.push(i | (0 << 30));
+          if (y + 1 < maze.size) this.edges.push(i | (1 << 30));
+          if (z + 1 < maze.size) this.edges.push(i | (2 << 30));
           i++;
         }
       }
@@ -30,8 +28,10 @@ export class Kruskal extends Generator {
 
   step() {
     while (this.edges.length > 0) {
-      const [i, direction] = this.edges.pop();
-      const j = i + this.maze.strides[direction];
+      const edge = this.edges.pop();
+      const i = edge & 0x3fff_ffff;
+      const d = edge >>> 30;
+      const j = i + this.maze.strides[d];
       let set1 = this.sets[i];
       let set2 = this.sets[j];
       if (set1 !== set2) {
@@ -44,10 +44,8 @@ export class Kruskal extends Generator {
           this.sets[index] = set1;
         }
 
-        const [pn, nn] = directions[direction];
-
-        this.maze[i] |= pn;
-        this.maze[j] |= nn;
+        this.maze[i] |= neighbor.px << d;
+        this.maze[j] |= neighbor.nx << d;
         break;
       }
     }
