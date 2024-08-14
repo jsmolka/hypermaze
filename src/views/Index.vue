@@ -175,7 +175,7 @@ class MazeGraphic extends Graphic {
       this.edges.add(edges);
     }
 
-    this.render();
+    this.forceRender();
   }
 }
 
