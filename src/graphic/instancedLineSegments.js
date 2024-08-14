@@ -12,7 +12,12 @@ const identity = new Matrix4();
 
 export class InstancedLineSegments extends LineSegments {
   constructor(geometry, material, count) {
-    super(new InstancedBufferGeometry().copy(geometry), material);
+    super(
+      geometry instanceof InstancedBufferGeometry
+        ? geometry
+        : new InstancedBufferGeometry().copy(geometry),
+      material,
+    );
 
     this.geometry.instanceCount = count;
     this.geometry.setAttribute(
