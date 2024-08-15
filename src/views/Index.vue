@@ -207,7 +207,6 @@ onMounted(() => {
     () => {
       graphic.initMaze();
       graphic.paint();
-      graphic.fitAndCenter();
     },
   );
 });
