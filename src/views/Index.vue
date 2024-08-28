@@ -1,20 +1,14 @@
 <template>
   <div class="fixed top-2 left-2 flex gap-2 p-2 bg-shade-8 border rounded-sm">
-    <Button size="icon" title="Reset view" variant="ghost" @click="resetView">
-      <CubeIcon />
+    <Button variant="ghost" size="icon" title="Reset view" @click="resetView">
+      <PhCube class="size-4" />
     </Button>
-    <Button size="icon" title="Repaint" variant="ghost" @click="repaint">
-      <ReloadIcon />
+    <Button variant="ghost" size="icon" title="Repaint" @click="repaint">
+      <PhArrowClockwise class="size-4" />
     </Button>
-    <Button
-      :class="{ '!bg-shade-6': settings.animate }"
-      size="icon"
-      title="Animate"
-      variant="ghost"
-      @click="settings.animate = !settings.animate"
-    >
-      <PlayIcon />
-    </Button>
+    <Toggle variant="ghost" size="icon" title="Animate" v-model="settings.animate">
+      <PhPlay class="size-4" />
+    </Toggle>
     <Select class="w-fit" v-model="settings.algorithm" :items="Settings.Algorithm.$values">
       <template #item="{ item }">
         <SelectItemText>{{ Settings.Algorithm.$translate(item) }}</SelectItemText>
@@ -29,6 +23,7 @@
 import { Button } from '@/components/ui/button';
 import { InputNumber } from '@/components/ui/input';
 import { Select, SelectItemText } from '@/components/ui/select';
+import { Toggle } from '@/components/ui/toggle';
 import { CubeEdgesGeometry } from '@/graphic/cubeEdgesGeometry';
 import { CubeGeometry } from '@/graphic/cubeGeometry';
 import { dispose } from '@/graphic/dispose';
@@ -43,7 +38,7 @@ import { RecursiveBacktracking } from '@/modules/recursiveBacktracking';
 import { Settings } from '@/modules/settings';
 import { useSettingsStore } from '@/stores/settings';
 import { colors } from '@/utils/colors';
-import { CubeIcon, PlayIcon, ReloadIcon } from '@radix-icons/vue';
+import { PhArrowClockwise, PhCube, PhPlay } from '@phosphor-icons/vue';
 import { useResizeObserver } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
 import { Group, LineBasicMaterial, Mesh, MeshBasicMaterial } from 'three';

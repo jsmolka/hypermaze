@@ -6,38 +6,41 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
 const version = 1;
-const id = 'settings';
 
-export const useSettingsStore = defineStore(id, () => {
+export const useSettingsStore = defineStore('settings', () => {
   const settings = ref(new Settings());
 
-  const exportData = () => {
+  const toJson = () => {
     return { version, data: serialize(settings.value) };
   };
 
-  const persist = async () => {
-    await set(id, exportData());
-  };
-
-  const { ignoreUpdates } = watchIgnorable(settings, persist, { deep: true });
-
-  const importData = (data) => {
+  const fromJson = (data) => {
     if (data != null && data.version != null) {
       settings.value = deserialize(Settings, convert(data));
     }
   };
 
-  const hydrate = async () => {
-    const data = await get(id);
-    ignoreUpdates(() => importData(data));
+  const storageKey = 'settings';
+
+  const persist = async () => {
+    await set(storageKey, toJson());
   };
 
-  return { settings, hydrate };
+  const { ignoreUpdates } = watchIgnorable(settings, persist, { deep: true });
+
+  const hydrate = async () => {
+    const data = await get(storageKey);
+    ignoreUpdates(() => fromJson(data));
+  };
+
+  return { settings, toJson, fromJson, hydrate, persist };
 });
 
 function convert(data) {
   const { version, data: settings } = data;
   switch (version) {
+    case 1:
+      break;
   }
   return settings;
 }

@@ -1,3 +1,4 @@
+import { colors } from '@/utils/colors';
 import '@/utils/toast.scss';
 import _ from 'lodash';
 import { Notyf } from 'notyf';
@@ -7,7 +8,7 @@ const notyf = new Notyf({
   types: [
     {
       type: 'info',
-      background: 'rgb(var(--brand-3))',
+      background: colors.brand3.hex,
       icon: false,
     },
   ],
