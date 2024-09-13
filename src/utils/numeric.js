@@ -20,3 +20,7 @@ export function degToRad(degrees) {
 export function radToDeg(radians) {
   return radians * (180 / Math.PI);
 }
+
+export function nthRoot(value, root) {
+  return value ** (1 / root);
+}

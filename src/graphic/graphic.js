@@ -2,12 +2,12 @@ import { CameraControls } from '@/graphic/cameraControls';
 import { CameraViewBox } from '@/graphic/cameraViewBox';
 import { dispose } from '@/graphic/dispose';
 import { Renderer } from '@/graphic/renderer.js';
-import _ from 'lodash';
+import { merge } from 'lodash-es';
 import { Clock, PerspectiveCamera, Scene, Vector3 } from 'three';
 
 export class Graphic {
   constructor(container, options = {}) {
-    options = _.merge(
+    options = merge(
       {
         fitRatio: 1.05,
       },

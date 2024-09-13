@@ -1,9 +1,9 @@
-import _ from 'lodash';
+import { merge } from 'lodash-es';
 import { WebGLRenderer } from 'three';
 
 export class Renderer extends WebGLRenderer {
   constructor(container, options = {}) {
-    options = _.merge(
+    options = merge(
       {
         alpha: false,
         antialias: true,
