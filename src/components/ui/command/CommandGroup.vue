@@ -1,6 +1,6 @@
 <template>
   <ComboboxGroup v-bind="delegatedProps" :class="cn('overflow-hidden p-1', props.class)">
-    <ComboboxLabel v-if="heading" class="px-2 py-1.5 text-xs font-medium text-shade-3">
+    <ComboboxLabel v-if="heading" class="text-shade-3 px-2 py-1.5 text-xs font-medium">
       {{ heading }}
     </ComboboxLabel>
     <slot />
@@ -9,7 +9,7 @@
 
 <script setup>
 import { cn } from '@/utils/ui';
-import { ComboboxGroup, ComboboxLabel } from 'radix-vue';
+import { ComboboxGroup, ComboboxLabel } from 'reka-ui';
 import { computed } from 'vue';
 
 const props = defineProps({

@@ -2,31 +2,56 @@
   <textarea
     :class="
       cn(
-        'flex w-full min-h-16 px-2 py-1.5 bg-shade-7 border rounded-sm placeholder:text-shade-3 disabled:opacity-50 disabled:cursor-not-allowed',
+        'bg-shade-7 placeholder:text-shade-3 flex min-h-16 w-full rounded-xs border px-2 py-1.5 disabled:cursor-not-allowed disabled:opacity-50',
         props.class,
       )
     "
-    :value="modelValue"
-    @change="change"
-    @focusin="$event.target.select()"
+    :value="value"
+    @input="update"
+    @change="update"
+    @focus="select"
   />
 </template>
 
 <script setup>
 import { useForceUpdate } from '@/composables/useForceUpdate';
 import { cn } from '@/utils/ui';
-import { nextTick } from 'vue';
+import { computed, nextTick } from 'vue';
 
 const modelValue = defineModel({ type: String, required: false });
 
 const props = defineProps({
   class: { required: false },
+  event: { type: String, default: 'input' },
+  nullable: { type: Boolean, default: false },
 });
+
+const value = computed(() => {
+  return modelValue.value ?? '';
+});
+
+const select = (event) => {
+  // Safari workaround
+  requestAnimationFrame(() => {
+    event.target.select();
+  });
+};
 
 const forceUpdate = useForceUpdate();
 
-const change = async (event) => {
-  modelValue.value = event.target.value;
+const update = async (event) => {
+  if (event.type !== props.event) {
+    return;
+  }
+
+  let value = event.target.value;
+  if (value === '' && props.nullable) {
+    value = null;
+  }
+
+  if (modelValue.value !== value) {
+    modelValue.value = value;
+  }
 
   await nextTick();
   forceUpdate();

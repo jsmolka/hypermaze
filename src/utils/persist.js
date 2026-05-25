@@ -1,4 +1,5 @@
 import { enumerate } from '@/utils/iterator.js';
+import { cloneDeep, isEqual } from 'lodash-es';
 
 const schemas = new Map();
 
@@ -13,10 +14,21 @@ export function primitive() {
   };
 }
 
+export function object() {
+  return {
+    serialize: (value) => cloneDeep(value),
+    deserialize: (value) => cloneDeep(value),
+  };
+}
+
 export function date() {
   return {
     serialize: (value) => value.getTime(),
-    deserialize: (value) => new Date(value),
+    deserialize: (value) => {
+      const date = new Date();
+      date.setTime(value);
+      return date;
+    },
   };
 }
 
@@ -42,8 +54,8 @@ export function dynamic(getClass) {
 
 export function array(persist, class_ = Array) {
   return {
-    serialize: (value) => Array.from(value, persist.serialize),
-    deserialize: (value) => class_.from(value, persist.deserialize),
+    serialize: (value) => Array.from(value, (item) => persist.serialize(item)),
+    deserialize: (value) => class_.from(value, (item) => persist.deserialize(item)),
   };
 }
 
@@ -114,4 +126,8 @@ export function clone(object) {
 
 export function assign(target, source) {
   return deserialize(source.constructor, serialize(source), target);
+}
+
+export function equals(a, b) {
+  return isEqual(serialize(a), serialize(b));
 }

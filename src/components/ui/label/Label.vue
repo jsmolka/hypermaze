@@ -3,7 +3,7 @@
     v-bind="forwardedProps"
     :class="
       cn(
-        'text-xs font-medium leading-none uppercase peer-disabled:opacity-50 peer-disabled:cursor-not-allowed',
+        'text-xs leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
         props.class,
       )
     "
@@ -14,7 +14,7 @@
 
 <script setup>
 import { cn } from '@/utils/ui';
-import { Label, useForwardProps } from 'radix-vue';
+import { Label, useForwardProps } from 'reka-ui';
 import { computed } from 'vue';
 
 const props = defineProps({

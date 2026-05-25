@@ -1,0 +1,97 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@font-face {
+  font-family: 'Inter';
+  font-weight: 100 900;
+  font-display: block;
+  font-style: normal;
+  src: url('@/assets/fonts/inter.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-weight: 100 900;
+  font-display: block;
+  font-style: oblique 14deg;
+  src: url('@/assets/fonts/inter.woff2') format('woff2');
+}
+
+@theme {
+  --font-sans: Inter, Roboto, ui-sans-serif, sans-serif;
+  --color-shade-1: #ebedf2; /* hsv(220,  3%, 95%) */
+  --color-shade-2: #dfe1e6; /* hsv(220,  3%, 90%) */
+  --color-shade-3: #5b6780; /* hsv(220, 29%, 50%) */
+  --color-shade-4: #485266; /* hsv(220, 29%, 40%) */
+  --color-shade-5: #3f4859; /* hsv(220, 29%, 35%) */
+  --color-shade-6: #363e4d; /* hsv(220, 29%, 30%) */
+  --color-shade-7: #2d3340; /* hsv(220, 29%, 25%) */
+  --color-shade-8: #242933; /* hsv(220, 29%, 20%) */
+  --color-brand-1: #6ea3cc; /* hsv(206, 46%, 80%) */
+  --color-brand-2: #6799bf; /* hsv(206, 46%, 75%) */
+  --color-brand-3: #608fb3; /* hsv(206, 46%, 70%) */
+  --color-red: #bf616a;
+  --color-orange: #d08770;
+  --color-yellow: #ebcb8b;
+  --color-green: #a3be8c;
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop {
+    @apply border-shade-6;
+  }
+
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    @apply cursor-pointer;
+  }
+
+  html,
+  body,
+  #app {
+    @apply h-full;
+  }
+
+  body {
+    @apply bg-shade-8;
+    @apply text-sm;
+    @apply text-shade-2;
+  }
+
+  ::selection {
+    @apply bg-brand-3;
+    @apply text-shade-8;
+  }
+
+  * {
+    @apply scrollbar-thin;
+    @apply scrollbar-thumb-shade-5;
+    @apply scrollbar-track-transparent;
+
+    &:focus-visible {
+      @apply outline-hidden;
+
+      &:not([tabindex^='-']) {
+        @apply ring-2;
+        @apply ring-brand-3;
+      }
+    }
+  }
+}
+
+@utility disabled {
+  @apply opacity-50;
+  @apply pointer-events-none;
+  @apply select-none;
+}
+
+@utility font-feature-tnum {
+  font-feature-settings: 'tnum';
+}
+
+@utility skip-ink-none {
+  text-decoration-skip-ink: none;
+}

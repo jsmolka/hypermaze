@@ -3,20 +3,20 @@
     v-bind="forwardedProps"
     :class="
       cn(
-        'flex items-center px-2 py-1.5 cursor-pointer select-none rounded-sm focus:bg-shade-6 data-[state=open]:bg-shade-6',
+        'focus:bg-shade-6 data-[state=open]:bg-shade-6 flex cursor-pointer items-center rounded-xs px-2 py-1.5 select-none',
         props.class,
       )
     "
   >
     <slot />
-    <PhCaretRight class="size-3 ml-auto" />
+    <PhCaretRight class="ml-auto size-3" />
   </DropdownMenuSubTrigger>
 </template>
 
 <script setup>
 import { cn } from '@/utils/ui';
 import { PhCaretRight } from '@phosphor-icons/vue';
-import { DropdownMenuSubTrigger, useForwardProps } from 'radix-vue';
+import { DropdownMenuSubTrigger, useForwardProps } from 'reka-ui';
 import { computed } from 'vue';
 
 const props = defineProps({

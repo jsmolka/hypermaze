@@ -3,7 +3,7 @@
     v-bind="forwardedProps"
     :class="
       cn(
-        'flex items-center px-2 py-1.5 cursor-pointer select-none rounded-sm data-[highlighted]:bg-shade-6 data-[disabled]:opacity-50 data-[disabled]:pointer-events-none',
+        'data-[highlighted]:bg-shade-6 flex cursor-pointer items-center rounded-xs px-2 py-1.5 select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         props.class,
       )
     "
@@ -14,7 +14,7 @@
 
 <script setup>
 import { cn } from '@/utils/ui';
-import { ComboboxItem, useForwardPropsEmits } from 'radix-vue';
+import { ComboboxItem, useForwardPropsEmits } from 'reka-ui';
 import { computed } from 'vue';
 
 const props = defineProps({

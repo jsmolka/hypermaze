@@ -1,11 +1,11 @@
 <template>
-  <SelectValue v-bind="props" class="select-none [[data-placeholder]_&]:text-shade-3">
+  <SelectValue v-bind="props" class="[[data-placeholder]_&]:text-shade-3 select-none">
     <slot />
   </SelectValue>
 </template>
 
 <script setup>
-import { SelectValue } from 'radix-vue';
+import { SelectValue } from 'reka-ui';
 
 const props = defineProps({
   as: { required: false },

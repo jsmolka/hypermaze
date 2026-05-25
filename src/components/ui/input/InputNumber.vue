@@ -2,18 +2,15 @@
   <input
     :class="
       cn(
-        'flex w-full h-8 px-2 py-1.5 bg-shade-7 border rounded-sm overflow-ellipsis placeholder:text-shade-3 disabled:opacity-50 disabled:cursor-not-allowed',
+        'bg-shade-7 placeholder:text-shade-3 flex h-8 w-full rounded-xs border px-2 py-1.5 text-ellipsis disabled:cursor-not-allowed disabled:opacity-50',
         props.class,
       )
     "
     :inputmode="inputmode"
     :value="value"
-    @input="
-      $event.target.value = format($event.target.value);
-      clampCursor($event);
-    "
+    @input="input"
     @change="change"
-    @focusin="select"
+    @focus="select"
     @keydown="keyDown"
     @pointerup="clampCursor"
     type="text"
@@ -30,11 +27,17 @@ const modelValue = defineModel({ type: Number, required: false });
 
 const props = defineProps({
   class: { required: false },
+  event: { type: String, default: 'input' },
   max: { type: Number, default: Number.MAX_SAFE_INTEGER },
   min: { type: Number, default: Number.MIN_SAFE_INTEGER },
+  nullable: { type: Boolean, default: false },
   precision: { type: Number, default: 0 },
   prefix: { type: String, default: '' },
   suffix: { type: String, default: '' },
+});
+
+const inputmode = computed(() => {
+  return props.precision > 0 ? 'decimal' : 'numeric';
 });
 
 const unformat = (value) => {
@@ -71,21 +74,19 @@ const format = (value) => {
     .replace(/^(-)?0+(?=\d)/, '$1');
 
   if (value.includes(decimalSeparator)) {
-    const [integer, decimal] = value.split(decimalSeparator, 2);
+    const [integer, fraction] = value.split(decimalSeparator, 2);
     value =
       props.precision > 0
-        ? `${integer}${decimalSeparator}${decimal.slice(0, props.precision)}`
+        ? `${integer}${decimalSeparator}${fraction.slice(0, props.precision)}`
         : integer;
   }
   return props.prefix + (value || '0') + props.suffix;
 };
 
-const inputmode = computed(() => {
-  return props.precision > 0 ? 'decimal' : 'numeric';
-});
-
 const value = computed(() => {
-  return modelValue.value != null ? format(modelValue.value.toLocaleString()) : null;
+  return modelValue.value != null
+    ? format(modelValue.value.toLocaleString(undefined, { useGrouping: false }))
+    : '';
 });
 
 let selectionStart = null;
@@ -95,7 +96,10 @@ const select = (event) => {
   selectionStart = props.prefix.length;
   selectionEnd = event.target.value.length - props.suffix.length;
 
-  event.target.setSelectionRange(selectionStart, selectionEnd);
+  // Safari workaround
+  requestAnimationFrame(() => {
+    event.target.setSelectionRange(selectionStart, selectionEnd);
+  });
 };
 
 const keyDown = (event) => {
@@ -182,20 +186,38 @@ const clampCursor = (event) => {
 
 const forceUpdate = useForceUpdate();
 
-const change = async (event) => {
-  const value = clamp(
-    parseFloat(unformat(event.target.value).replaceAll(decimalSeparator, '.')) || 0,
-    props.min,
-    props.max,
-  );
+const update = async (event) => {
+  if (event.type !== props.event) {
+    return;
+  }
+
+  let value = unformat(event.target.value);
+  if (value === '' && props.nullable) {
+    value = null;
+  } else {
+    value = clamp(
+      Number.parseFloat(value.replaceAll(decimalSeparator, '.')) || 0,
+      props.min,
+      props.max,
+    );
+  }
+
   if (modelValue.value !== value) {
     modelValue.value = value;
   }
 
   await nextTick();
   forceUpdate();
+};
 
-  await nextTick();
+const input = async (event) => {
+  event.target.value = format(event.target.value);
+  await update(event);
+  clampCursor(event);
+};
+
+const change = async (event) => {
+  await update(event);
   clampCursor(event);
 };
 </script>

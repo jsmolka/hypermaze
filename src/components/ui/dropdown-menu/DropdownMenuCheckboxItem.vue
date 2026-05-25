@@ -1,16 +1,14 @@
 <template>
   <DropdownMenuCheckboxItem
     v-bind="forwardedProps"
-    :checked="modelValue"
-    @update:checked="emit('update:modelValue', $event)"
     :class="
       cn(
-        'relative flex items-center pl-8 pr-2 py-1.5 cursor-pointer select-none rounded-sm focus:bg-shade-6 data-[disabled]:opacity-50 data-[disabled]:pointer-events-none',
+        'focus:bg-shade-6 relative flex cursor-pointer items-center rounded-xs py-1.5 pr-2 pl-8 select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         props.class,
       )
     "
   >
-    <span class="absolute left-2 flex justify-center items-center size-4">
+    <span class="absolute left-2 flex size-4 items-center justify-center">
       <DropdownMenuItemIndicator>
         <PhCheck class="size-3" weight="bold" />
       </DropdownMenuItemIndicator>
@@ -22,11 +20,7 @@
 <script setup>
 import { cn } from '@/utils/ui';
 import { PhCheck } from '@phosphor-icons/vue';
-import {
-  DropdownMenuCheckboxItem,
-  DropdownMenuItemIndicator,
-  useForwardPropsEmits,
-} from 'radix-vue';
+import { DropdownMenuCheckboxItem, DropdownMenuItemIndicator, useForwardPropsEmits } from 'reka-ui';
 import { computed } from 'vue';
 
 const props = defineProps({

@@ -1,10 +1,10 @@
 <template>
-  <SelectSeparator v-bind="forwardedProps" :class="cn('h-px -mx-1 my-1 bg-shade-6', props.class)" />
+  <SelectSeparator v-bind="forwardedProps" :class="cn('bg-shade-6 -mx-1 my-1 h-px', props.class)" />
 </template>
 
 <script setup>
 import { cn } from '@/utils/ui';
-import { SelectSeparator, useForwardProps } from 'radix-vue';
+import { SelectSeparator, useForwardProps } from 'reka-ui';
 import { computed } from 'vue';
 
 const props = defineProps({

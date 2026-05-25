@@ -1,12 +1,12 @@
 <template>
-  <div class="flex items-center gap-2 p-3 border-b">
-    <PhMagnifyingGlass class="shrink-0 size-4 text-shade-3" />
+  <div class="flex items-center gap-2 border-b p-3">
+    <PhMagnifyingGlass class="text-shade-3 size-4 shrink-0" />
     <ComboboxInput
       v-bind="{ ...forwardedProps, ...$attrs }"
       auto-focus
       :class="
         cn(
-          'bg-transparent overflow-ellipsis placeholder:text-shade-3 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:ring-0',
+          'placeholder:text-shade-3 bg-transparent text-ellipsis focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50',
           props.class,
         )
       "
@@ -18,7 +18,7 @@
 <script setup>
 import { cn } from '@/utils/ui';
 import { PhMagnifyingGlass } from '@phosphor-icons/vue';
-import { ComboboxInput, useForwardProps } from 'radix-vue';
+import { ComboboxInput, useForwardProps } from 'reka-ui';
 import { computed } from 'vue';
 
 defineOptions({

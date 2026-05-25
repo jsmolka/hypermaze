@@ -4,7 +4,7 @@
     :as-child="asChild"
     :class="
       cn(
-        'font-bold cursor-pointer underline underline-offset-2 decoration-2 decoration-shade-5 skip-ink-none',
+        'skip-ink-none decoration-shade-5 cursor-pointer font-bold underline decoration-2 underline-offset-2',
         props.class,
       )
     "
@@ -15,7 +15,7 @@
 
 <script setup>
 import { cn } from '@/utils/ui';
-import { Primitive } from 'radix-vue';
+import { Primitive } from 'reka-ui';
 
 const props = defineProps({
   as: { default: 'a' },

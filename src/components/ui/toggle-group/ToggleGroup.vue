@@ -1,7 +1,7 @@
 <template>
   <ToggleGroupRoot
     v-bind="forwardedProps"
-    :class="cn('flex justify-center items-center gap-2', props.class)"
+    :class="cn('flex items-center justify-center gap-2', props.class)"
   >
     <slot />
   </ToggleGroupRoot>
@@ -9,7 +9,7 @@
 
 <script setup>
 import { cn } from '@/utils/ui';
-import { ToggleGroupRoot, useForwardPropsEmits } from 'radix-vue';
+import { ToggleGroupRoot, useForwardPropsEmits } from 'reka-ui';
 import { computed, provide } from 'vue';
 
 const props = defineProps({

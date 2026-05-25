@@ -1,12 +1,12 @@
 <template>
-  <ComboboxRoot v-bind="forwardedProps" :class="cn('flex flex-col rounded-sm', props.class)">
+  <ComboboxRoot v-bind="forwardedProps" :class="cn('flex flex-col rounded-xs', props.class)">
     <slot />
   </ComboboxRoot>
 </template>
 
 <script setup>
 import { cn } from '@/utils/ui';
-import { ComboboxRoot, useForwardPropsEmits } from 'radix-vue';
+import { ComboboxRoot, useForwardPropsEmits } from 'reka-ui';
 import { computed } from 'vue';
 
 const props = defineProps({

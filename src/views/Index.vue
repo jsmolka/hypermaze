@@ -1,5 +1,5 @@
 <template>
-  <div class="fixed top-2 left-2 flex gap-2 p-2 bg-shade-8 border rounded-sm">
+  <div class="bg-shade-8 fixed top-2 left-2 flex gap-2 rounded-sm border p-2">
     <Button variant="ghost" size="icon" title="Reset view" @click="resetView">
       <PhCube class="size-4" />
     </Button>

@@ -1,11 +1,9 @@
 <template>
   <SwitchRoot
     v-bind="forwardedProps"
-    :checked="modelValue"
-    @update:checked="emit('update:modelValue', $event)"
     :class="
       cn(
-        'peer inline-flex items-center shrink-0 w-9 h-5 cursor-pointer border-2 border-transparent rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed data-[state=checked]:bg-brand-3 data-[state=unchecked]:bg-shade-6',
+        'peer data-[state=checked]:bg-brand-3 data-[state=unchecked]:bg-shade-6 inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors disabled:cursor-not-allowed disabled:opacity-50',
         props.class,
       )
     "
@@ -13,7 +11,7 @@
     <SwitchThumb
       :class="
         cn(
-          'block size-4 bg-shade-2 rounded-full pointer-events-none transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0',
+          'bg-shade-2 pointer-events-none block size-4 rounded-full transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0',
         )
       "
     />
@@ -22,7 +20,7 @@
 
 <script setup>
 import { cn } from '@/utils/ui';
-import { SwitchRoot, SwitchThumb, useForwardPropsEmits } from 'radix-vue';
+import { SwitchRoot, SwitchThumb, useForwardPropsEmits } from 'reka-ui';
 import { computed } from 'vue';
 
 const props = defineProps({

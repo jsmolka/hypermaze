@@ -1,13 +1,13 @@
 <template>
   <DropdownMenuSeparator
     v-bind="forwardedProps"
-    :class="cn('h-px -mx-1 my-1 bg-shade-6', props.class)"
+    :class="cn('bg-shade-6 -mx-1 my-1 h-px', props.class)"
   />
 </template>
 
 <script setup>
 import { cn } from '@/utils/ui';
-import { DropdownMenuSeparator, useForwardProps } from 'radix-vue';
+import { DropdownMenuSeparator, useForwardProps } from 'reka-ui';
 import { computed } from 'vue';
 
 const props = defineProps({
