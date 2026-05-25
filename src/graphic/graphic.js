@@ -3,7 +3,7 @@ import { CameraViewBox } from '@/graphic/cameraViewBox';
 import { dispose } from '@/graphic/dispose';
 import { Renderer } from '@/graphic/renderer.js';
 import { merge } from 'lodash-es';
-import { Clock, PerspectiveCamera, Scene, Vector3 } from 'three';
+import { PerspectiveCamera, Scene, Timer, Vector3 } from 'three';
 
 export class Graphic {
   constructor(container, options = {}) {
@@ -57,9 +57,10 @@ export class Graphic {
     this.controls.mouseButtons.middle = CameraControls.ACTION.DOLLY;
     this.controls.mouseButtons.right = CameraControls.ACTION.ROTATE;
 
-    const clock = new Clock();
+    const timer = new Timer();
     const update = () => {
-      const updated = this.controls.update(clock.getDelta());
+      timer.update();
+      const updated = this.controls.update(timer.getDelta());
       if (updated) {
         this.camera.updateMatrixWorld();
         this.render();
